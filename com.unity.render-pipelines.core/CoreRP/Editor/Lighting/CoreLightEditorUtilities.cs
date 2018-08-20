@@ -7,6 +7,48 @@ namespace UnityEditor.Experimental.Rendering
 {
     public static class CoreLightEditorUtilities
     {
+        public struct DrawInfo
+        {
+            [Flags]
+            public enum Draw
+            {
+                Wireframe = 1,
+                Handle = 2,
+            }
+
+            public Draw draw;
+            public Color wireframeColor;
+            public Color handleColor;
+            public bool isWireFrame { get { return (draw & Draw.Wireframe) > 0; } }
+            public bool isHandle { get { return (draw & Draw.Handle) > 0; } }
+            public DrawInfo(Color handleColor = default(Color), Color wireframeColor = default(Color), Draw draw = Draw.Wireframe | Draw.Handle)
+            {
+                this.draw = draw;
+                this.wireframeColor = wireframeColor;
+                this.handleColor = handleColor;
+            }
+        }
+
+        static float SliderHandle(Vector3 position, Vector3 direction, float value)
+        {
+            Vector3 pos = position + direction * value;
+            float sizeHandle = HandleUtility.GetHandleSize(pos);
+            bool temp = GUI.changed;
+            GUI.changed = false;
+            pos = Handles.Slider(pos, direction, sizeHandle * 0.03f, Handles.DotHandleCap, 0f);
+            if (GUI.changed)
+                value = Vector3.Dot(pos - position, direction);
+            GUI.changed |= temp;
+            return value;
+        }
+
+        public static Color GetLightHandleColor(Color wireframeColor)
+        {
+            Color color = wireframeColor;
+            color.a = Mathf.Clamp01(color.a * 2);
+            return (QualitySettings.activeColorSpace == ColorSpace.Linear) ? color.linear : color;
+        }
+
         // Don't use Handles.Disc as it break the highlight of the gizmo axis, use our own draw disc function instead for gizmo
         public static void DrawWireDisc(Quaternion q, Vector3 position, Vector3 axis, float radius)
         {
@@ -32,70 +74,67 @@ namespace UnityEditor.Experimental.Rendering
             Gizmos.DrawLine(pos, lastPos);
         }
 
-        public static void DrawSpotlightGizmo(Light spotlight, float innerSpotPercent, bool selected)
+
+        // innerSpotPercent - 0 to 1 value (percentage 0 - 100%)
+        public static void DrawSpotlightHandle(Light spotlight, float innerSpotPercent, bool selected)
         {
             var flatRadiusAtRange = spotlight.range * Mathf.Tan(spotlight.spotAngle * Mathf.Deg2Rad * 0.5f);
 
-            var vectorLineUp = Vector3.Normalize(spotlight.gameObject.transform.position + spotlight.gameObject.transform.forward * spotlight.range + spotlight.gameObject.transform.up * flatRadiusAtRange - spotlight.gameObject.transform.position);
-            var vectorLineDown = Vector3.Normalize(spotlight.gameObject.transform.position + spotlight.gameObject.transform.forward * spotlight.range + spotlight.gameObject.transform.up * -flatRadiusAtRange - spotlight.gameObject.transform.position);
-            var vectorLineRight = Vector3.Normalize(spotlight.gameObject.transform.position + spotlight.gameObject.transform.forward * spotlight.range + spotlight.gameObject.transform.right * flatRadiusAtRange - spotlight.gameObject.transform.position);
-            var vectorLineLeft = Vector3.Normalize(spotlight.gameObject.transform.position + spotlight.gameObject.transform.forward * spotlight.range + spotlight.gameObject.transform.right * -flatRadiusAtRange - spotlight.gameObject.transform.position);
+            var vectorLineUp = Vector3.Normalize(spotlight.gameObject.transform.forward * spotlight.range + spotlight.gameObject.transform.up * flatRadiusAtRange);
+            var vectorLineDown = Vector3.Normalize(spotlight.gameObject.transform.forward * spotlight.range + spotlight.gameObject.transform.up * -flatRadiusAtRange);
+            var vectorLineRight = Vector3.Normalize(spotlight.gameObject.transform.forward * spotlight.range + spotlight.gameObject.transform.right * flatRadiusAtRange);
+            var vectorLineLeft = Vector3.Normalize(spotlight.gameObject.transform.forward * spotlight.range + spotlight.gameObject.transform.right * -flatRadiusAtRange);
 
             var rangeDiscDistance = Mathf.Cos(Mathf.Deg2Rad * spotlight.spotAngle / 2) * spotlight.range;
             var rangeDiscRadius = spotlight.range * Mathf.Sin(spotlight.spotAngle * Mathf.Deg2Rad * 0.5f);
             var nearDiscDistance = Mathf.Cos(Mathf.Deg2Rad * spotlight.spotAngle / 2) * spotlight.shadowNearPlane;
             var nearDiscRadius = spotlight.shadowNearPlane * Mathf.Sin(spotlight.spotAngle * Mathf.Deg2Rad * 0.5f);
-
-            //Draw Range disc
-            DrawWireDisc(spotlight.gameObject.transform.rotation, spotlight.gameObject.transform.position + spotlight.gameObject.transform.forward * rangeDiscDistance, spotlight.gameObject.transform.forward, rangeDiscRadius);
-            //Draw Lines
-
-            Gizmos.DrawLine(spotlight.gameObject.transform.position, spotlight.gameObject.transform.position + vectorLineUp * spotlight.range);
-            Gizmos.DrawLine(spotlight.gameObject.transform.position, spotlight.gameObject.transform.position + vectorLineDown * spotlight.range);
-            Gizmos.DrawLine(spotlight.gameObject.transform.position, spotlight.gameObject.transform.position + vectorLineRight * spotlight.range);
-            Gizmos.DrawLine(spotlight.gameObject.transform.position, spotlight.gameObject.transform.position + vectorLineLeft * spotlight.range);
-
-            if (selected)
+            
+            using (new Handles.DrawingScope(Gizmos.color))
             {
-                //Draw Range Arcs
-                using (new Handles.DrawingScope(Gizmos.color))
+                DrawCone(spotlight.gameObject.transform.position, spotlight.gameObject.transform.rotation, spotlight.range, spotlight.spotAngle * innerSpotPercent);
+
+                if (selected)
                 {
+                    //Inner Cone
+                    DrawCone(spotlight.gameObject.transform.position, spotlight.gameObject.transform.rotation, spotlight.range, spotlight.spotAngle);
+
+                    //Draw Range Arcs
                     Handles.DrawWireArc(spotlight.gameObject.transform.position, spotlight.gameObject.transform.right, vectorLineUp, spotlight.spotAngle, spotlight.range);
                     Handles.DrawWireArc(spotlight.gameObject.transform.position, spotlight.gameObject.transform.up, vectorLineLeft, spotlight.spotAngle, spotlight.range);
-                }
-                //Draw Near Plane Disc
-                if (spotlight.shadows != LightShadows.None)
-                    DrawWireDisc(spotlight.gameObject.transform.rotation, spotlight.gameObject.transform.position + spotlight.gameObject.transform.forward * nearDiscDistance, spotlight.gameObject.transform.forward, nearDiscRadius);
 
-                //Inner Cone
-                DrawInnerCone(spotlight, innerSpotPercent);
+                    //Draw Near Plane Disc
+                    if (spotlight.shadows != LightShadows.None)
+                        Handles.DrawWireDisc(spotlight.gameObject.transform.forward, spotlight.gameObject.transform.position + spotlight.gameObject.transform.forward * nearDiscDistance, nearDiscRadius);
+
+                    //waiting for Martin handles
+                }
             }
         }
 
-        // innerSpotPercent - 0 to 1 value (percentage 0 - 100%)
-        public static void DrawInnerCone(Light spotlight, float innerSpotPercent)
+        public static void DrawCone(Vector3 position, Quaternion rotation, float range, float angle)
         {
-            var flatRadiusAtRange = spotlight.range * Mathf.Tan(spotlight.spotAngle * innerSpotPercent * Mathf.Deg2Rad * 0.5f);
+            var flatRadiusAtRange = range * Mathf.Tan(angle * Mathf.Deg2Rad * 0.5f);
+            var forward = rotation * Vector3.forward;
+            var up = rotation * Vector3.up;
+            var right = rotation * Vector3.right;
 
-            var vectorLineUp = Vector3.Normalize(spotlight.gameObject.transform.position + spotlight.gameObject.transform.forward * spotlight.range + spotlight.gameObject.transform.up * flatRadiusAtRange - spotlight.gameObject.transform.position);
-            var vectorLineDown = Vector3.Normalize(spotlight.gameObject.transform.position + spotlight.gameObject.transform.forward * spotlight.range + spotlight.gameObject.transform.up * -flatRadiusAtRange - spotlight.gameObject.transform.position);
-            var vectorLineRight = Vector3.Normalize(spotlight.gameObject.transform.position + spotlight.gameObject.transform.forward * spotlight.range + spotlight.gameObject.transform.right * flatRadiusAtRange - spotlight.gameObject.transform.position);
-            var vectorLineLeft = Vector3.Normalize(spotlight.gameObject.transform.position + spotlight.gameObject.transform.forward * spotlight.range + spotlight.gameObject.transform.right * -flatRadiusAtRange - spotlight.gameObject.transform.position);
+            var vectorLineUp = Vector3.Normalize(forward * range + up * flatRadiusAtRange);
+            var vectorLineDown = Vector3.Normalize(forward * range + up * -flatRadiusAtRange);
+            var vectorLineRight = Vector3.Normalize(forward * range + right * flatRadiusAtRange);
+            var vectorLineLeft = Vector3.Normalize(forward * range + right * -flatRadiusAtRange);
 
             //Draw Lines
-
-            Gizmos.DrawLine(spotlight.gameObject.transform.position, spotlight.gameObject.transform.position + vectorLineUp * spotlight.range);
-            Gizmos.DrawLine(spotlight.gameObject.transform.position, spotlight.gameObject.transform.position + vectorLineDown * spotlight.range);
-            Gizmos.DrawLine(spotlight.gameObject.transform.position, spotlight.gameObject.transform.position + vectorLineRight * spotlight.range);
-            Gizmos.DrawLine(spotlight.gameObject.transform.position, spotlight.gameObject.transform.position + vectorLineLeft * spotlight.range);
-
-            var innerAngle = spotlight.spotAngle * innerSpotPercent;
-            if (innerAngle > 0)
+            Handles.DrawLine(position, position + vectorLineUp * range);
+            Handles.DrawLine(position, position + vectorLineDown * range);
+            Handles.DrawLine(position, position + vectorLineRight * range);
+            Handles.DrawLine(position, position + vectorLineLeft * range);
+            
+            if (angle > 0)
             {
-                var innerDiscDistance = Mathf.Cos(Mathf.Deg2Rad * innerAngle * 0.5f) * spotlight.range;
-                var innerDiscRadius = spotlight.range * Mathf.Sin(innerAngle * Mathf.Deg2Rad * 0.5f);
-                //Draw Range disc
-                DrawWireDisc(spotlight.gameObject.transform.rotation, spotlight.gameObject.transform.position + spotlight.gameObject.transform.forward * innerDiscDistance, spotlight.gameObject.transform.forward, innerDiscRadius);
+                var discDistance = Mathf.Cos(Mathf.Deg2Rad * angle * 0.5f) * range;
+                var discRadius = range * Mathf.Sin(angle * Mathf.Deg2Rad * 0.5f);
+                Handles.DrawWireDisc(position + forward * discDistance, forward, discRadius);
             }
         }
 
@@ -110,7 +149,7 @@ namespace UnityEditor.Experimental.Rendering
             Gizmos.DrawWireSphere(arealight.transform.position, arealight.range);
         }
 
-        [Obsolete("Should use the legacy gizmo draw or at least a DrawWireSphereTwoShaded now exposed")]
+        [Obsolete("Should use the legacy gizmo draw")]
         public static void DrawPointlightGizmo(Light pointlight, bool selected)
         {
             if (pointlight.shadows != LightShadows.None && selected) Gizmos.DrawWireSphere(pointlight.transform.position, pointlight.shadowNearPlane);
@@ -119,10 +158,16 @@ namespace UnityEditor.Experimental.Rendering
 
         // Same as Gizmo.DrawFrustum except that when aspect is below one, fov represent fovX instead of fovY
         // Use to match our light frustum pyramid behavior
-        public static void DrawLightPyramidFrustum(Vector3 center, float fov, float maxRange, float minRange, float aspect)
+        public static Vector4 DrawLightPyramidFrustumHandle(Vector4 aspectMinRangeMaxRangeFov, bool useNearPlane, DrawInfo info)
         {
-            fov = Mathf.Deg2Rad * fov * 0.5f;
-            float tanfov = Mathf.Tan(fov);
+            if (!(info.isHandle | info.isWireFrame))
+                return aspectMinRangeMaxRangeFov;
+
+            float aspect = aspectMinRangeMaxRangeFov.x;
+            float minRange = aspectMinRangeMaxRangeFov.y;
+            float maxRange = aspectMinRangeMaxRangeFov.z;
+            float fov = aspectMinRangeMaxRangeFov.w;
+            float tanfov = Mathf.Tan(Mathf.Deg2Rad * fov * 0.5f);
             Vector3 farEnd = new Vector3(0, 0, maxRange);
             Vector3 endSizeX;
             Vector3 endSizeY;
@@ -143,44 +188,99 @@ namespace UnityEditor.Experimental.Rendering
             Vector3 e2 = farEnd - endSizeX + endSizeY;
             Vector3 e3 = farEnd - endSizeX - endSizeY;
             Vector3 e4 = farEnd + endSizeX - endSizeY;
-            if (minRange <= 0.0f)
+
+            using (new Handles.DrawingScope(info.wireframeColor))
             {
-                s1 = s2 = s3 = s4 = center;
-            }
-            else
-            {
-                Vector3 startSizeX;
-                Vector3 startSizeY;
-                if (aspect >= 1.0f)
+                if (minRange <= 0.0f || !useNearPlane)
                 {
-                    startSizeX = new Vector3(minRange * tanfov * aspect, 0, 0);
-                    startSizeY = new Vector3(0, minRange * tanfov, 0);
+                    s1 = s2 = s3 = s4 = Vector3.zero;
                 }
                 else
                 {
-                    startSizeY = new Vector3(minRange * tanfov / aspect, 0, 0);
-                    startSizeX = new Vector3(0, minRange * tanfov, 0);
+                    Vector3 nearEnd = new Vector3(0, 0, minRange);
+
+                    Vector3 startSizeX;
+                    Vector3 startSizeY;
+                    if (aspect >= 1.0f)
+                    {
+                        startSizeX = new Vector3(minRange * tanfov * aspect, 0, 0);
+                        startSizeY = new Vector3(0, minRange * tanfov, 0);
+                    }
+                    else
+                    {
+                        startSizeX = new Vector3(minRange * tanfov, 0, 0);
+                        startSizeY = new Vector3(0, minRange * tanfov / aspect, 0);
+                    }
+                    Vector3 startPoint = nearEnd;
+                    s1 = startPoint + startSizeX + startSizeY;
+                    s2 = startPoint - startSizeX + startSizeY;
+                    s3 = startPoint - startSizeX - startSizeY;
+                    s4 = startPoint + startSizeX - startSizeY;
+
+                    if (info.isWireFrame)
+                    {
+                        Handles.DrawLine(s1, s2);
+                        Handles.DrawLine(s2, s3);
+                        Handles.DrawLine(s3, s4);
+                        Handles.DrawLine(s4, s1);
+                    }
                 }
-                Vector3 startPoint = center;
-                s1 =    startPoint + startSizeX + startSizeY;
-                s2 =    startPoint - startSizeX + startSizeY;
-                s3 =    startPoint - startSizeX - startSizeY;
-                s4 =    startPoint + startSizeX - startSizeY;
-                Gizmos.DrawLine(s1, s2);
-                Gizmos.DrawLine(s2, s3);
-                Gizmos.DrawLine(s3, s4);
-                Gizmos.DrawLine(s4, s1);
+
+                if (info.isWireFrame)
+                {
+                    Handles.DrawLine(e1, e2);
+                    Handles.DrawLine(e2, e3);
+                    Handles.DrawLine(e3, e4);
+                    Handles.DrawLine(e4, e1);
+
+                    Handles.DrawLine(s1, e1);
+                    Handles.DrawLine(s2, e2);
+                    Handles.DrawLine(s3, e3);
+                    Handles.DrawLine(s4, e4);
+                }
+            }
+            
+            if (info.isHandle)
+            {
+                using (new Handles.DrawingScope(info.handleColor))
+                {
+                    if(useNearPlane)
+                    {
+                        minRange = SliderHandle(Vector3.zero, Vector3.forward, minRange);
+                    }
+                    
+                    maxRange = SliderHandle(Vector3.zero, Vector3.forward, maxRange);
+
+                    float endHalfWidth = (e1.x - e2.x) * 0.5f;
+                    float endHalfHeight = (e1.y - e4.y) * 0.5f;
+
+                    endHalfHeight = SliderHandle(farEnd, Vector3.up, endHalfHeight);
+                    endHalfHeight = SliderHandle(farEnd, Vector3.down, endHalfHeight);
+                    endHalfWidth = SliderHandle(farEnd, Vector3.right, endHalfWidth);
+                    endHalfWidth = SliderHandle(farEnd, Vector3.left, endHalfWidth);
+
+                    //deals with numeral instability for aspect division
+                    if (endHalfHeight < 0f)
+                        endHalfHeight = 0f;
+                    if (endHalfWidth < Mathf.Epsilon)
+                        endHalfWidth = Mathf.Epsilon;
+                    aspect = endHalfWidth / endHalfHeight;
+
+                    //dealing with numeral instabilities on fov inside atan division
+                    if (maxRange < Mathf.Epsilon * 1000)
+                    {
+                        fov = 2f * Mathf.Rad2Deg * Mathf.Atan((aspect >= 1 ? endHalfHeight : endHalfWidth) / maxRange);
+                    }
+                    //prevent instabilities to propagate
+                    if (float.IsNaN(fov) || float.IsNaN(aspect))
+                    {
+                        fov = aspectMinRangeMaxRangeFov.w;
+                        aspect = aspectMinRangeMaxRangeFov.x;
+                    }
+                }
             }
 
-            Gizmos.DrawLine(e1, e2);
-            Gizmos.DrawLine(e2, e3);
-            Gizmos.DrawLine(e3, e4);
-            Gizmos.DrawLine(e4, e1);
-
-            Gizmos.DrawLine(s1, e1);
-            Gizmos.DrawLine(s2, e2);
-            Gizmos.DrawLine(s3, e3);
-            Gizmos.DrawLine(s4, e4);
+            return new Vector4(aspect, minRange, maxRange, fov);
         }
 
         public static void DrawLightOrthoFrustum(Vector3 center, float width, float height, float maxRange, float minRange)
