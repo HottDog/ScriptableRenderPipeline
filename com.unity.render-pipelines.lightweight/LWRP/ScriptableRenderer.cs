@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.PostProcessing;
 
@@ -49,6 +50,16 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         public ComputeBuffer perObjectLightIndices { get; private set; }
         
         List<ScriptableRenderPass> m_ActiveRenderPassQueue = new List<ScriptableRenderPass>();
+
+        List<ShaderPassName> m_LegacyShaderPassNames = new List<ShaderPassName>()
+        {
+            new ShaderPassName("Always"),
+            new ShaderPassName("ForwardBase"),
+            new ShaderPassName("PrepassBase"),
+            new ShaderPassName("Vertex"),
+            new ShaderPassName("VertexLMRGBM"),
+            new ShaderPassName("VertexLM"),
+        };
 
         const string k_ReleaseResourcesTag = "Release Resources";
         readonly Material[] m_Materials;
@@ -216,6 +227,23 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             }
 
             return configuration;
+        }
+
+        [Conditional("DEVELOPMENT_BUILD"), Conditional("UNITY_EDITOR")]
+        public void RenderObjectsWithError(ref ScriptableRenderContext context, ref CullResults cullResults, Camera camera, FilterRenderersSettings filterSettings, SortFlags sortFlags)
+        {
+            Material errorMaterial = GetMaterial(MaterialHandles.Error);
+            if (errorMaterial != null)
+            {
+                DrawRendererSettings errorSettings = new DrawRendererSettings(camera, m_LegacyShaderPassNames[0]);
+                for (int i = 1; i < m_LegacyShaderPassNames.Count; ++i)
+                    errorSettings.SetShaderPassName(i, m_LegacyShaderPassNames[i]);
+
+                errorSettings.sorting.flags = sortFlags;
+                errorSettings.rendererConfiguration = RendererConfiguration.None;
+                errorSettings.SetOverrideMaterial(errorMaterial, 0);
+                context.DrawRenderers(cullResults.visibleRenderers, ref errorSettings, filterSettings);
+            }
         }
 
         void DisposePasses(ref ScriptableRenderContext context)

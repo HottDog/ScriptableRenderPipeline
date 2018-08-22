@@ -50,13 +50,12 @@ public class CustomLWPipe : MonoBehaviour, IRendererSetup
         renderer.EnqueuePass(m_CreateLightweightRenderTexturesPass);
 
         Camera camera = renderingData.cameraData.camera;
-        bool dynamicBatching = renderingData.supportsDynamicBatching;
         RendererConfiguration rendererConfiguration = renderer.GetRendererConfiguration(renderingData.lightData.totalAdditionalLightsCount);
 
         m_SetupLightweightConstants.Setup(renderer.maxVisibleLocalLights, renderer.perObjectLightIndices);
         renderer.EnqueuePass(m_SetupLightweightConstants);
 
-        m_RenderOpaqueForwardPass.Setup(baseDescriptor, colorHandle, depthHandle, renderer.GetCameraClearFlag(camera), camera.backgroundColor, rendererConfiguration, dynamicBatching);
+        m_RenderOpaqueForwardPass.Setup(baseDescriptor, colorHandle, depthHandle, renderer.GetCameraClearFlag(camera), camera.backgroundColor, rendererConfiguration);
         renderer.EnqueuePass(m_RenderOpaqueForwardPass);
     }
 }
