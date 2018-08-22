@@ -4,7 +4,46 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [3.4.0-preview]
+### Added
+- When you have enabled Gizmos, they now appear correctly in the Game view.
+### Fixed
+- The Unlit shader now samples Global Illumination correctly.
+- The Inspector window for the Unlit shader now displays correctly.
+
+## [3.3.0-preview]
+### Added
+- Add callbacks to LWRP that can be attached to a camera (IBeforeCameraRender, IAfterDepthPrePass, IAfterOpaquePass, IAfterOpaquePostProcess, IAfterSkyboxPass, IAfterTransparentPass, IAfterRender)
+
+###Changed
+- Clean up LWRP creation of render textures. If we are not going straight to screen ensure that we create both depth and color targets.
+- UNITY_DECLARE_FRAMEBUFFER_INPUT and UNITY_READ_FRAMEBUFFER_INPUT macros were added. They are necessary for reading transient attachments.
+- UNITY_MATRIX_I_VP is now defined.
+- Renamed LightweightForwardRenderer to ScriptableRenderer.
+- Moved all light constants to _LightBuffer CBUFFER. Now _PerCamera CBUFFER contains all other per camera constants.
+
+### Fixed
+- Lightweight Unlit shader UI doesn't throw an error about missing receive shadow property anymore.
+
+## [3.2.0-preview]
+### Changed
+- Receive Shadows property is now exposed in the material instead of in the renderer.
+- The UI for Lightweight asset has been updated with new categories. A more clean structure and foldouts has been added to keep things organized.
+
+### Fixed
+- Shadow casters are now properly culled per cascade. (case 1059142)
+- Rendering no longer breaks when Android platform is selected in Build Settings. (case 1058812)
+- Scriptable passes no longer have missing material references. Now they access cached materials in the renderer.(case 1061353)
+- When you change a Shadow Cascade option in the Pipeline Asset, this no longer warns you that you've exceeded the array size for the _WorldToShadow property.
+- Terrain shader optimizations.
+
+## [3.1.0-preview]
+
+### Fixed
+- Fixed assert errors caused by multi spot lights
+- Fixed LWRP-DirectionalShadowConstantBuffer params setting
+
+## [3.0.0-preview]
 ### Added
 - Added camera additional data component to control shadows, depth and color texture.
 - pipeline now uses XRSEttings.eyeTextureResolutionScale as renderScale when in XR.
@@ -15,6 +54,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Removed 7x7 tent filtering when using cascades.
 - Screenspace shadow resolve is now only done when rendering shadow cascades.
 - Updated the UI for the Lighweight pipeline asset.
+- Update assembly definitions to output assemblies that match Unity naming convention (Unity.*).
 
 ### Fixed
 - Post-processing now works with VR on PC.
