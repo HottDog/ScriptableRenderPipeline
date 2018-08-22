@@ -23,6 +23,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             public static int _LightIndexBuffer;
         }
 
+        const string k_SetupLightConstants = "Setup Light Constants";
         MixedLightingSetup m_MixedLightingSetup;
 
         Vector4 k_DefaultLightPosition = new Vector4(0.0f, 0.0f, 1.0f, 0.0f);
@@ -233,7 +234,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 // if not using a compute buffer, engine will set indices in 2 vec4 constants
                 // unity_4LightIndices0 and unity_4LightIndices1
                 if (perObjectLightIndices != null)
-                    cmd.SetGlobalBuffer("_LightIndexBuffer", perObjectLightIndices);
+                    cmd.SetGlobalBuffer(LightConstantBuffer._LightIndexBuffer, perObjectLightIndices);
             }
             else
             {
@@ -288,14 +289,14 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             CoreUtils.SetKeyword(cmd, LightweightKeywordStrings.CascadeShadows, shadowData.directionalLightCascadeCount > 1);
 
             // TODO: Remove this. legacy particles support will be removed from Unity in 2018.3. This should be a shader_feature instead with prop exposed in the Standard particles shader.
-            CoreUtils.SetKeyword(cmd, "SOFTPARTICLES_ON", cameraData.requiresSoftParticles);
+            CoreUtils.SetKeyword(cmd, LightweightKeywordStrings.SoftParticles, cameraData.requiresSoftParticles);
         }
 
         public override void Execute(ScriptableRenderer renderer, ref ScriptableRenderContext context,
             ref CullResults cullResults,
             ref RenderingData renderingData)
         {
-            CommandBuffer cmd = CommandBufferPool.Get("SetupShaderConstants");
+            CommandBuffer cmd = CommandBufferPool.Get(k_SetupLightConstants);
             SetupShaderLightConstants(cmd, ref renderingData.lightData);
             SetShaderKeywords(cmd, ref renderingData.cameraData, ref renderingData.lightData, ref renderingData.shadowData);
             context.ExecuteCommandBuffer(cmd);

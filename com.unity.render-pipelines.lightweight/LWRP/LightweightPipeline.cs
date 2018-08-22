@@ -39,12 +39,11 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             }
         }
 
+        const string k_RenderCameraTag = "Render Camera";
         CameraComparer m_CameraComparer = new CameraComparer();
-
         ScriptableRenderer m_Renderer;
         CullResults m_CullResults;
-
-        private PipelineSettings m_PipelineSettings;
+        PipelineSettings m_PipelineSettings;
 
         public struct PipelineSettings
         {
@@ -162,11 +161,10 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             }
         }
 
-        public static void RenderSingleCamera(ScriptableRenderContext context, PipelineSettings settings, Camera camera, ref CullResults cullResults, IRendererSetup setup, ScriptableRenderer renderer)
+        void RenderSingleCamera(ScriptableRenderContext context, PipelineSettings settings, Camera camera, ref CullResults cullResults, IRendererSetup setup, ScriptableRenderer renderer)
         {
-            string renderCameraTag = camera.name;
-            CommandBuffer cmd = CommandBufferPool.Get(renderCameraTag);
-            using (new ProfilingSample(cmd, renderCameraTag))
+            CommandBuffer cmd = CommandBufferPool.Get(k_RenderCameraTag);
+            using (new ProfilingSample(cmd, k_RenderCameraTag))
             {
                 CameraData cameraData;
                 InitializeCameraData(settings, camera, out cameraData);
@@ -235,7 +233,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 #endif
         }
 
-        static void InitializeCameraData(PipelineSettings settings, Camera camera, out CameraData cameraData)
+        void InitializeCameraData(PipelineSettings settings, Camera camera, out CameraData cameraData)
         {
             const float kRenderScaleThreshold = 0.05f;
             cameraData.camera = camera;
@@ -296,11 +294,11 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         }
 
         
-        static void InitializeRenderingData(PipelineSettings settings, ref CameraData cameraData,
+        void InitializeRenderingData(PipelineSettings settings, ref CameraData cameraData,
             List<VisibleLight> visibleLights, int maxSupportedLocalLightsPerPass, int maxSupportedVertexLights,
             out RenderingData renderingData)
         {
-            List<int> localLightIndices = new List<int>();
+            m_LocalLightIndices.Clear();
             
             bool hasDirectionalShadowCastingLight = false;
             bool hasLocalShadowCastingLight = false;
@@ -318,18 +316,18 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                     else
                     {
                         hasLocalShadowCastingLight |= castShadows;
-                        localLightIndices.Add(i);
+                        m_LocalLightIndices.Add(i);
                     }
                 }
             }
 
             renderingData.cameraData = cameraData;
-            InitializeLightData(settings, visibleLights, maxSupportedLocalLightsPerPass, maxSupportedVertexLights, localLightIndices, out renderingData.lightData);
+            InitializeLightData(settings, visibleLights, maxSupportedLocalLightsPerPass, maxSupportedVertexLights, m_LocalLightIndices, out renderingData.lightData);
             InitializeShadowData(settings, hasDirectionalShadowCastingLight, hasLocalShadowCastingLight, out renderingData.shadowData);
             renderingData.supportsDynamicBatching = settings.supportsDynamicBatching;
         }
 
-        static void InitializeShadowData(PipelineSettings settings, bool hasDirectionalShadowCastingLight, bool hasLocalShadowCastingLight, out ShadowData shadowData)
+        void InitializeShadowData(PipelineSettings settings, bool hasDirectionalShadowCastingLight, bool hasLocalShadowCastingLight, out ShadowData shadowData)
         {
             // Until we can have keyword stripping forcing single cascade hard shadows on gles2
             bool supportsScreenSpaceShadows = SystemInfo.graphicsDeviceType != GraphicsDeviceType.OpenGLES2;
@@ -363,7 +361,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             shadowData.bufferBitCount = 16;
         }
 
-        static void InitializeLightData(PipelineSettings settings, List<VisibleLight> visibleLights,
+        void InitializeLightData(PipelineSettings settings, List<VisibleLight> visibleLights,
             int maxSupportedLocalLightsPerPass, int maxSupportedVertexLights, List<int> localLightIndices, out LightData lightData)
         {
             int visibleLightsCount = Math.Min(visibleLights.Count, settings.maxPixelLights);
@@ -382,7 +380,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         }
 
         // Main Light is always a directional light
-        static int GetMainLight(PipelineSettings settings, List<VisibleLight> visibleLights)
+        int GetMainLight(PipelineSettings settings, List<VisibleLight> visibleLights)
         {
             int totalVisibleLights = visibleLights.Count;
 
@@ -407,7 +405,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             return -1;
         }
 
-        static void SetupPerFrameShaderConstants()
+        void SetupPerFrameShaderConstants()
         {
             // When glossy reflections are OFF in the shader we set a constant color to use as indirect specular
             SphericalHarmonicsL2 ambientSH = RenderSettings.ambientProbe;
@@ -419,7 +417,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             Shader.SetGlobalVector(PerFrameBuffer._SubtractiveShadowColor, CoreUtils.ConvertSRGBToActiveColorSpace(RenderSettings.subtractiveShadowColor));
         }
 
-        static void SetupPerCameraShaderConstants(CameraData cameraData)
+        void SetupPerCameraShaderConstants(CameraData cameraData)
         {
             Camera camera = cameraData.camera;
             float cameraWidth = (float)cameraData.camera.pixelWidth * cameraData.renderScale;

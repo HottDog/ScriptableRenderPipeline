@@ -176,13 +176,13 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                     }
                 }
 
-                SetupLocalLightsShadowReceiverConstants(ref context, cmd, ref shadowData);
+                SetupLocalLightsShadowReceiverConstants(cmd, ref shadowData);
             }
             context.ExecuteCommandBuffer(cmd);
             CommandBufferPool.Release(cmd);
         }
 
-        void SetupLocalLightsShadowReceiverConstants(ref ScriptableRenderContext context, CommandBuffer cmd, ref ShadowData shadowData)
+        void SetupLocalLightsShadowReceiverConstants(CommandBuffer cmd, ref ShadowData shadowData)
         {
             for (int i = 0; i < m_LocalLightSlices.Length; ++i)
                 m_LocalShadowMatrices[i] = m_LocalLightSlices[i].shadowTransform;

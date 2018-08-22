@@ -4,6 +4,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 {
     public class CreateLightweightRenderTexturesPass : ScriptableRenderPass
     {
+        const string k_CreateRenderTexturesTag = "Create Render Textures";
         const int k_DepthStencilBufferBits = 32;
         private RenderTargetHandle colorAttachmentHandle { get; set; }
         private RenderTargetHandle depthAttachmentHandle { get; set; }
@@ -26,7 +27,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             ref CullResults cullResults,
             ref RenderingData renderingData)
         {
-            CommandBuffer cmd = CommandBufferPool.Get("");
+            CommandBuffer cmd = CommandBufferPool.Get(k_CreateRenderTexturesTag);
             if (colorAttachmentHandle != RenderTargetHandle.CameraTarget)
             {
                 var colorDescriptor = descriptor;

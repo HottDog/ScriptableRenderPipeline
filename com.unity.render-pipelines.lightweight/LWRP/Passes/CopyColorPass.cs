@@ -4,6 +4,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 {
     public class CopyColorPass : ScriptableRenderPass
     {
+        const string k_CopyColorTag = "Copy Color";
         float[] m_OpaqueScalerValues = {1.0f, 0.5f, 0.25f, 0.25f};
         int m_SampleOffsetShaderHandle;
 
@@ -25,8 +26,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             ref CullResults cullResults,
             ref RenderingData renderingData)
         {
-            
-            CommandBuffer cmd = CommandBufferPool.Get("Copy Color");
+            CommandBuffer cmd = CommandBufferPool.Get(k_CopyColorTag);
             Downsampling downsampling = renderingData.cameraData.opaqueTextureDownsampling;
             float opaqueScaler = m_OpaqueScalerValues[(int)downsampling];
 
@@ -56,8 +56,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             context.ExecuteCommandBuffer(cmd);
             CommandBufferPool.Release(cmd);
         }
-        
-        
+
         public override void FrameCleanup(CommandBuffer cmd)
         {
             if (destination != RenderTargetHandle.CameraTarget)
