@@ -2,9 +2,9 @@ using UnityEngine.Rendering;
 
 namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 {
-
     public class ScreenSpaceShadowResolvePass : ScriptableRenderPass
     {
+        const string k_CollectShadowsTag = "Collect Shadows";
         RenderTextureFormat m_ColorFormat;
 
         public ScreenSpaceShadowResolvePass()
@@ -32,13 +32,15 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             ref CullResults cullResults,
             ref RenderingData renderingData)
         {
-            if (renderingData.shadowData.renderedDirectionalShadowQuality == LightShadows.None)
+            if (renderingData.lightData.mainLightIndex == -1)
                 return;
 
-            CommandBuffer cmd = CommandBufferPool.Get("Collect Shadows");
+            CommandBuffer cmd = CommandBufferPool.Get(k_CollectShadowsTag);
 
             cmd.GetTemporaryRT(colorAttachmentHandle.id, descriptor, FilterMode.Bilinear);
-            SetShadowCollectPassKeywords(cmd, ref renderingData.shadowData);
+
+            VisibleLight shadowLight = renderingData.lightData.visibleLights[renderingData.lightData.mainLightIndex];
+            SetShadowCollectPassKeywords(cmd, ref shadowLight, ref renderingData.shadowData);
 
             // Note: The source isn't actually 'used', but there's an engine peculiarity (bug) that
             // doesn't like null sources when trying to determine a stereo-ized blit.  So for proper
@@ -71,9 +73,9 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             }
         }
 
-        void SetShadowCollectPassKeywords(CommandBuffer cmd, ref ShadowData shadowData)
+        void SetShadowCollectPassKeywords(CommandBuffer cmd, ref VisibleLight shadowLight, ref ShadowData shadowData)
         {
-            CoreUtils.SetKeyword(cmd, LightweightKeywordStrings.SoftShadows, shadowData.renderedDirectionalShadowQuality == LightShadows.Soft);
+            CoreUtils.SetKeyword(cmd, LightweightKeywordStrings.SoftShadows, shadowData.supportsSoftShadows && shadowLight.light.shadows == LightShadows.Soft);
             CoreUtils.SetKeyword(cmd, LightweightKeywordStrings.CascadeShadows, shadowData.directionalLightCascadeCount > 1);
         }
     }

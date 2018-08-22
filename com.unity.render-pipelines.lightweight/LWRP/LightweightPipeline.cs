@@ -360,9 +360,6 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             shadowData.localShadowAtlasWidth = shadowData.localShadowAtlasHeight = settings.localShadowAtlasResolution;
             shadowData.supportsSoftShadows = settings.supportsSoftShadows;
             shadowData.bufferBitCount = 16;
-
-            shadowData.renderedDirectionalShadowQuality = LightShadows.None;
-            shadowData.renderedLocalShadowQuality = LightShadows.None;
         }
 
         static void InitializeLightData(PipelineSettings settings, List<VisibleLight> visibleLights,

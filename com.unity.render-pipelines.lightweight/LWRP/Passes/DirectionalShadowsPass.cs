@@ -102,7 +102,6 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
         void RenderDirectionalCascadeShadowmap(ref ScriptableRenderContext context, ref CullResults cullResults, ref LightData lightData, ref ShadowData shadowData)
         {
-            LightShadows shadowQuality = LightShadows.None;
             int shadowLightIndex = lightData.mainLightIndex;
             if (shadowLightIndex == -1)
                 return;
@@ -149,16 +148,10 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 }
 
                 if (success)
-                {
-                    shadowQuality = (shadowData.supportsSoftShadows) ? light.shadows : LightShadows.Hard;
                     SetupDirectionalShadowReceiverConstants(cmd, ref shadowData, shadowLight);
-                }
             }
             context.ExecuteCommandBuffer(cmd);
             CommandBufferPool.Release(cmd);
-
-            // TODO: We should have RenderingData as a readonly but currently we need this to pass shadow rendering to litpass
-            shadowData.renderedDirectionalShadowQuality = shadowQuality;
         }
 
         void SetupDirectionalShadowReceiverConstants(CommandBuffer cmd, ref ShadowData shadowData, VisibleLight shadowLight)

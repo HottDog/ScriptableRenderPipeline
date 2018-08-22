@@ -117,7 +117,6 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
             Matrix4x4 view, proj;
             Bounds bounds;
-            int shadowSampling = 0;
 
             CommandBuffer cmd = CommandBufferPool.Get(k_RenderLocalShadows);
             using (new ProfilingSample(cmd, k_RenderLocalShadows))
@@ -167,7 +166,6 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                         m_LocalLightSlices[i].shadowTransform = shadowTransform;
 
                         m_LocalShadowStrength[i] = light.shadowStrength;
-                        shadowSampling = Math.Max(shadowSampling, (int)light.shadows);
 
                         if (shadowCastingLightsCount > 1)
                             LightweightShadowUtils.ApplySliceTransform(ref m_LocalLightSlices[i], atlasWidth, atlasHeight);
@@ -182,9 +180,6 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             }
             context.ExecuteCommandBuffer(cmd);
             CommandBufferPool.Release(cmd);
-
-            // TODO: We should have RenderingData as a readonly but currently we need this to pass shadow rendering to litpass
-            shadowData.renderedLocalShadowQuality = (shadowData.supportsSoftShadows) ? (LightShadows)shadowSampling : LightShadows.Hard;
         }
 
         void SetupLocalLightsShadowReceiverConstants(ref ScriptableRenderContext context, CommandBuffer cmd, ref ShadowData shadowData)

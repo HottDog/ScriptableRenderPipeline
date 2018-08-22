@@ -73,9 +73,6 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         public int localShadowAtlasHeight;
         public bool supportsSoftShadows;
         public int bufferBitCount;
-
-        public LightShadows renderedDirectionalShadowQuality;
-        public LightShadows renderedLocalShadowQuality;
     }
 
     public class CameraComparer : IComparer<Camera>

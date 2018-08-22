@@ -258,15 +258,32 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             // TODO: We have to discuss cookie approach on LWRP.
             // CoreUtils.SetKeyword(cmd, LightweightKeywordStrings.MainLightCookieText, mainLightIndex != -1 && LightweightUtils.IsSupportedCookieType(visibleLights[mainLightIndex].lightType) && visibleLights[mainLightIndex].light.cookie != null);
 
-            LightShadows directionalShadowQuality = shadowData.renderedDirectionalShadowQuality;
-            LightShadows localShadowQuality = shadowData.renderedLocalShadowQuality;
+            List<VisibleLight> visibleLights = lightData.visibleLights;
+
+            // If shadows were resolved in screen space we don't sample shadowmap in lit shader. In that case we just set softDirectionalShadows to false.
+            bool softDirectionalShadows = shadowData.renderDirectionalShadows && !shadowData.requiresScreenSpaceShadowResolve &&
+                                          shadowData.supportsSoftShadows && lightData.mainLightIndex != -1 &&
+                                          visibleLights[lightData.mainLightIndex].light.shadows == LightShadows.Soft;
+
+            bool softLocalShadows = false;
+            if (shadowData.renderLocalShadows && shadowData.supportsSoftShadows)
+            {
+                List<int> visibleLocalLightIndices = lightData.visibleLocalLightIndices;
+                for (int i = 0; i < visibleLocalLightIndices.Count; ++i)
+                {
+                    if (visibleLights[visibleLocalLightIndices[i]].light.shadows == LightShadows.Soft)
+                    {
+                        softLocalShadows = true;
+                        break;
+                    }
+                }
+            }
 
             // Currently shadow filtering keyword is shared between local and directional shadows.
-            bool hasSoftShadows = (directionalShadowQuality == LightShadows.Soft || localShadowQuality == LightShadows.Soft) &&
-                                  shadowData.supportsSoftShadows;
+            bool hasSoftShadows = softDirectionalShadows || softLocalShadows;
 
-            CoreUtils.SetKeyword(cmd, LightweightKeywordStrings.DirectionalShadows, directionalShadowQuality != LightShadows.None);
-            CoreUtils.SetKeyword(cmd, LightweightKeywordStrings.LocalShadows, localShadowQuality != LightShadows.None);
+            CoreUtils.SetKeyword(cmd, LightweightKeywordStrings.DirectionalShadows, shadowData.renderDirectionalShadows);
+            CoreUtils.SetKeyword(cmd, LightweightKeywordStrings.LocalShadows, shadowData.renderLocalShadows);
             CoreUtils.SetKeyword(cmd, LightweightKeywordStrings.SoftShadows, hasSoftShadows);
             CoreUtils.SetKeyword(cmd, LightweightKeywordStrings.CascadeShadows, shadowData.directionalLightCascadeCount > 1);
 
