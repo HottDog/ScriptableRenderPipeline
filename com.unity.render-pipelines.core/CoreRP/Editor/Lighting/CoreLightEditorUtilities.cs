@@ -277,6 +277,13 @@ namespace UnityEditor.Experimental.Rendering
                         fov = aspectMinRangeMaxRangeFov.w;
                         aspect = aspectMinRangeMaxRangeFov.x;
                     }
+
+                    float linearAspect = Mathf.Log10(aspect) * 33f + 45f; //value between 2.07° and 90-2.07°
+                    Debug.Log("Aspect:" + aspect + " LinearAspect:" + linearAspect);
+                    Quaternion rot = Quaternion.AngleAxis(linearAspect, Vector3.forward);
+                    rot = Handles.Disc(rot, farEnd, Vector3.forward, HandleUtility.GetHandleSize(farEnd), false, 0f);
+                    aspect = Mathf.Pow(10f, (rot.eulerAngles.z - 45f) / 33f);
+                    Debug.Log(rot.eulerAngles.z + " -> Aspect:" +  aspect + " afterpow");
                 }
             }
 
