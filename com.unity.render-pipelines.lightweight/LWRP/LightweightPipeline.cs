@@ -202,6 +202,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 if (setupToUse == null)
                     setupToUse = defaultRendererSetup;
 
+                renderer.Clear();
                 setupToUse.Setup(renderer, ref context, ref cullResults, ref renderingData);
 
                 renderer.Execute(ref context, ref cullResults, ref renderingData);

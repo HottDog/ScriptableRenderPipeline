@@ -85,8 +85,6 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         {
             Init();
 
-            renderer.Clear();
-
             Camera camera = renderingData.cameraData.camera;
 
             renderer.SetupPerObjectLightIndices(ref cullResults, ref renderingData.lightData);
