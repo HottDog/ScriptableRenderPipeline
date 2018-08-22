@@ -325,6 +325,9 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             InitializeLightData(settings, visibleLights, maxSupportedLocalLightsPerPass, maxSupportedVertexLights, m_LocalLightIndices, out renderingData.lightData);
             InitializeShadowData(settings, hasDirectionalShadowCastingLight, hasLocalShadowCastingLight, out renderingData.shadowData);
             renderingData.supportsDynamicBatching = settings.supportsDynamicBatching;
+            renderingData.requiresDepthPrepass = renderingData.shadowData.requiresScreenSpaceShadowResolve ||
+                                                 renderingData.cameraData.isSceneViewCamera ||
+                                                (cameraData.requiresDepthTexture && !CanCopyDepth(ref cameraData));
         }
 
         void InitializeShadowData(PipelineSettings settings, bool hasDirectionalShadowCastingLight, bool hasLocalShadowCastingLight, out ShadowData shadowData)

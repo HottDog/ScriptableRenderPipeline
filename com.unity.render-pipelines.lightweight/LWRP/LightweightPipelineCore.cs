@@ -28,6 +28,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         public LightData lightData;
         public ShadowData shadowData;
         public bool supportsDynamicBatching;
+        public bool requiresDepthPrepass;
     }
 
     public struct LightData
@@ -230,6 +231,20 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             }
 
             // Remaining light types don't support cookies
+        }
+
+        public static bool CanCopyDepth(ref CameraData cameraData)
+        {
+            bool msaaEnabledForCamera = (int)cameraData.msaaSamples > 1;
+            bool supportsTextureCopy = SystemInfo.copyTextureSupport != CopyTextureSupport.None;
+            bool supportsDepthTarget = SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.Depth);
+            bool supportsDepthCopy = !msaaEnabledForCamera && (supportsDepthTarget || supportsTextureCopy);
+
+            // TODO:  We don't have support to highp Texture2DMS currently and this breaks depth precision.
+            // currently disabling it until shader changes kick in.
+            //bool msaaDepthResolve = msaaEnabledForCamera && SystemInfo.supportsMultisampledTextures != 0;
+            bool msaaDepthResolve = false;
+            return supportsDepthCopy || msaaDepthResolve;
         }
 
         public static void CopyTexture(CommandBuffer cmd, RenderTargetIdentifier source, RenderTargetIdentifier dest, Material material)

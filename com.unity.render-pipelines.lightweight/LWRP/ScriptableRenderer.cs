@@ -145,20 +145,6 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 cameraData.postProcessEnabled || cameraData.requiresOpaqueTexture || isTargetTexture2DArray || !cameraData.isDefaultViewport;
         }
 
-        public static bool CanCopyDepth(ref CameraData cameraData)
-        {
-            bool msaaEnabledForCamera = (int)cameraData.msaaSamples > 1;
-            bool supportsTextureCopy = SystemInfo.copyTextureSupport != CopyTextureSupport.None;
-            bool supportsDepthTarget = SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.Depth);
-            bool supportsDepthCopy = !msaaEnabledForCamera && (supportsDepthTarget || supportsTextureCopy);
-
-            // TODO:  We don't have support to highp Texture2DMS currently and this breaks depth precision.
-            // currently disabling it until shader changes kick in.
-            //bool msaaDepthResolve = msaaEnabledForCamera && SystemInfo.supportsMultisampledTextures != 0;
-            bool msaaDepthResolve = false;
-            return supportsDepthCopy || msaaDepthResolve;
-        }
-
         void DisposePasses(ref ScriptableRenderContext context)
         {
             CommandBuffer cmd = CommandBufferPool.Get("Release Resources");

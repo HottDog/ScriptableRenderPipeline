@@ -92,10 +92,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             RenderTextureDescriptor shadowDescriptor = baseDescriptor;
             shadowDescriptor.dimension = TextureDimension.Tex2D;
 
-            bool requiresCameraDepth = renderingData.cameraData.requiresDepthTexture;
-            bool requiresDepthPrepass = renderingData.shadowData.requiresScreenSpaceShadowResolve
-                                        || renderingData.cameraData.isSceneViewCamera 
-                                        || (requiresCameraDepth && !ScriptableRenderer.CanCopyDepth(ref renderingData.cameraData));
+            bool requiresDepthPrepass = renderingData.requiresDepthPrepass;
 
             // For now VR requires a depth prepass until we figure out how to properly resolve texture2DMS in stereo
             requiresDepthPrepass |= renderingData.cameraData.isStereoEnabled;
@@ -181,7 +178,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             foreach (var pass in camera.GetComponents<IAfterSkyboxPass>())
                 renderer.EnqueuePass(pass.GetPassToEnqueue(baseDescriptor, colorHandle, depthHandle));
 
-            if (requiresCameraDepth && !requiresDepthPrepass)
+            if (renderingData.cameraData.requiresDepthTexture && !requiresDepthPrepass)
             {
                 m_CopyDepthPass.Setup(depthHandle, DepthTexture);
                 renderer.EnqueuePass(m_CopyDepthPass);
