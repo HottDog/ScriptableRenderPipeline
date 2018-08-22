@@ -36,7 +36,7 @@ public class CustomLWPipe : MonoBehaviour, IRendererSetup
         renderer.Clear();
 
         renderer.SetupPerObjectLightIndices(ref cullResults, ref renderingData.lightData);
-        RenderTextureDescriptor baseDescriptor = ScriptableRenderer.CreateRTDesc(ref renderingData.cameraData);
+        RenderTextureDescriptor baseDescriptor = renderer.CreateRTDesc(ref renderingData.cameraData);
         RenderTextureDescriptor shadowDescriptor = baseDescriptor;
         shadowDescriptor.dimension = TextureDimension.Tex2D;
 
@@ -51,12 +51,12 @@ public class CustomLWPipe : MonoBehaviour, IRendererSetup
 
         Camera camera = renderingData.cameraData.camera;
         bool dynamicBatching = renderingData.supportsDynamicBatching;
-        RendererConfiguration rendererConfiguration = ScriptableRenderer.GetRendererConfiguration(renderingData.lightData.totalAdditionalLightsCount);
+        RendererConfiguration rendererConfiguration = renderer.GetRendererConfiguration(renderingData.lightData.totalAdditionalLightsCount);
 
         m_SetupLightweightConstants.Setup(renderer.maxVisibleLocalLights, renderer.perObjectLightIndices);
         renderer.EnqueuePass(m_SetupLightweightConstants);
 
-        m_RenderOpaqueForwardPass.Setup(baseDescriptor, colorHandle, depthHandle, ScriptableRenderer.GetCameraClearFlag(camera), camera.backgroundColor, rendererConfiguration, dynamicBatching);
+        m_RenderOpaqueForwardPass.Setup(baseDescriptor, colorHandle, depthHandle, renderer.GetCameraClearFlag(camera), camera.backgroundColor, rendererConfiguration, dynamicBatching);
         renderer.EnqueuePass(m_RenderOpaqueForwardPass);
     }
 }

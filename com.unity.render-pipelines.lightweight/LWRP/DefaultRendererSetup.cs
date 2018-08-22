@@ -88,7 +88,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             Camera camera = renderingData.cameraData.camera;
 
             renderer.SetupPerObjectLightIndices(ref cullResults, ref renderingData.lightData);
-            RenderTextureDescriptor baseDescriptor = ScriptableRenderer.CreateRTDesc(ref renderingData.cameraData);
+            RenderTextureDescriptor baseDescriptor = renderer.CreateRTDesc(ref renderingData.cameraData);
             RenderTextureDescriptor shadowDescriptor = baseDescriptor;
             shadowDescriptor.dimension = TextureDimension.Tex2D;
 
@@ -127,10 +127,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 renderer.EnqueuePass(m_ScreenSpaceShadowResolvePass);
             }
 
-            bool requiresRenderToTexture =
-                ScriptableRenderer.RequiresIntermediateColorTexture(
-                    ref renderingData.cameraData,
-                    baseDescriptor);
+            bool requiresRenderToTexture = renderer.RequiresIntermediateColorTexture(ref renderingData.cameraData, baseDescriptor);
             
             RenderTargetHandle colorHandle = RenderTargetHandle.CameraTarget;
             RenderTargetHandle depthHandle = RenderTargetHandle.CameraTarget;
@@ -149,12 +146,12 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 renderer.EnqueuePass(m_BeginXrRenderingPass);
 
             bool dynamicBatching = renderingData.supportsDynamicBatching;
-            RendererConfiguration rendererConfiguration = ScriptableRenderer.GetRendererConfiguration(renderingData.lightData.totalAdditionalLightsCount);
+            RendererConfiguration rendererConfiguration = renderer.GetRendererConfiguration(renderingData.lightData.totalAdditionalLightsCount);
 
             m_SetupLightweightConstants.Setup(renderer.maxVisibleLocalLights, renderer.perObjectLightIndices);
             renderer.EnqueuePass(m_SetupLightweightConstants);
 
-            m_RenderOpaqueForwardPass.Setup(baseDescriptor, colorHandle, depthHandle, ScriptableRenderer.GetCameraClearFlag(camera), camera.backgroundColor, rendererConfiguration, dynamicBatching);
+            m_RenderOpaqueForwardPass.Setup(baseDescriptor, colorHandle, depthHandle, renderer.GetCameraClearFlag(camera), camera.backgroundColor, rendererConfiguration, dynamicBatching);
             renderer.EnqueuePass(m_RenderOpaqueForwardPass);
             foreach (var pass in camera.GetComponents<IAfterOpaquePass>())
                 renderer.EnqueuePass(pass.GetPassToEnqueue(baseDescriptor, colorHandle, depthHandle));

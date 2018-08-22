@@ -30,7 +30,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             Downsampling downsampling = renderingData.cameraData.opaqueTextureDownsampling;
             float opaqueScaler = m_OpaqueScalerValues[(int)downsampling];
 
-            RenderTextureDescriptor opaqueDesc = ScriptableRenderer.CreateRTDesc(ref renderingData.cameraData, opaqueScaler);
+            RenderTextureDescriptor opaqueDesc = renderer.CreateRTDesc(ref renderingData.cameraData, opaqueScaler);
             RenderTargetIdentifier colorRT = source.Identifier();
             RenderTargetIdentifier opaqueColorRT = destination.Identifier();
 

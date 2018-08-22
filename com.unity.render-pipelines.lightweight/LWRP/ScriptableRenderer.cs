@@ -47,10 +47,10 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         public PostProcessRenderContext postProcessRenderContext { get; private set; }
 
         public ComputeBuffer perObjectLightIndices { get; private set; }
-
-
+        
         List<ScriptableRenderPass> m_ActiveRenderPassQueue = new List<ScriptableRenderPass>();
 
+        const string k_ReleaseResourcesTag = "Release Resources";
         readonly Material[] m_Materials;
         
         public ScriptableRenderer(LightweightPipelineAsset pipelineAsset)
@@ -79,7 +79,15 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 CoreUtils.Destroy(m_Materials[i]);
         }
 
-        public static RenderTextureDescriptor CreateRTDesc(ref CameraData cameraData, float scaler = 1.0f)
+        public void Execute(ref ScriptableRenderContext context, ref CullResults cullResults, ref RenderingData renderingData)
+        {
+            for (int i = 0; i < m_ActiveRenderPassQueue.Count; ++i)
+                m_ActiveRenderPassQueue[i].Execute(this, ref context, ref cullResults, ref renderingData);
+
+            DisposePasses(ref context);
+        }
+
+        public RenderTextureDescriptor CreateRTDesc(ref CameraData cameraData, float scaler = 1.0f)
         {
             Camera camera = cameraData.camera;
             RenderTextureDescriptor desc;
@@ -102,14 +110,6 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             return desc;
         }
 
-        public void Execute(ref ScriptableRenderContext context, ref CullResults cullResults, ref RenderingData renderingData)
-        {
-            for (int i = 0; i < m_ActiveRenderPassQueue.Count; ++i)
-                m_ActiveRenderPassQueue[i].Execute(this, ref context, ref cullResults, ref renderingData);
-
-            DisposePasses(ref context);
-        }
-
         public Material GetMaterial(MaterialHandles handle)
         {
             int handleID = (int)handle;
@@ -122,8 +122,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
             return m_Materials[handleID];
         }
-
-
+        
         public void Clear()
         {
             m_ActiveRenderPassQueue.Clear();
@@ -134,7 +133,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             m_ActiveRenderPassQueue.Add(pass);
         }
 
-        public static bool RequiresIntermediateColorTexture(ref CameraData cameraData, RenderTextureDescriptor baseDescriptor)
+        public bool RequiresIntermediateColorTexture(ref CameraData cameraData, RenderTextureDescriptor baseDescriptor)
         {
             if (cameraData.isOffscreenRender)
                 return false;
@@ -143,17 +142,6 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             bool isTargetTexture2DArray = baseDescriptor.dimension == TextureDimension.Tex2DArray;
             return cameraData.isSceneViewCamera || isScaledRender || cameraData.isHdrEnabled ||
                 cameraData.postProcessEnabled || cameraData.requiresOpaqueTexture || isTargetTexture2DArray || !cameraData.isDefaultViewport;
-        }
-
-        void DisposePasses(ref ScriptableRenderContext context)
-        {
-            CommandBuffer cmd = CommandBufferPool.Get("Release Resources");
-
-            for (int i = 0; i < m_ActiveRenderPassQueue.Count; ++i)
-                m_ActiveRenderPassQueue[i].FrameCleanup(cmd);
-
-            context.ExecuteCommandBuffer(cmd);
-            CommandBufferPool.Release(cmd);
         }
 
         public void SetupPerObjectLightIndices(ref CullResults cullResults, ref LightData lightData)
@@ -202,7 +190,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             }
         }
 
-        public static ClearFlag GetCameraClearFlag(Camera camera)
+        public ClearFlag GetCameraClearFlag(Camera camera)
         {
             ClearFlag clearFlag = ClearFlag.None;
             CameraClearFlags cameraClearFlags = camera.clearFlags;
@@ -216,7 +204,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             return clearFlag;
         }
 
-        public static RendererConfiguration GetRendererConfiguration(int localLightsCount)
+        public RendererConfiguration GetRendererConfiguration(int localLightsCount)
         {
             RendererConfiguration configuration = RendererConfiguration.PerObjectReflectionProbes | RendererConfiguration.PerObjectLightmaps | RendererConfiguration.PerObjectLightProbe;
             if (localLightsCount > 0)
@@ -228,6 +216,17 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             }
 
             return configuration;
+        }
+
+        void DisposePasses(ref ScriptableRenderContext context)
+        {
+            CommandBuffer cmd = CommandBufferPool.Get(k_ReleaseResourcesTag);
+
+            for (int i = 0; i < m_ActiveRenderPassQueue.Count; ++i)
+                m_ActiveRenderPassQueue[i].FrameCleanup(cmd);
+
+            context.ExecuteCommandBuffer(cmd);
+            CommandBufferPool.Release(cmd);
         }
     }
 }

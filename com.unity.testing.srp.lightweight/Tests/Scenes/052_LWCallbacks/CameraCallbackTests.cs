@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Experimental.Rendering.LightweightPipeline;
 using UnityEngine.Rendering;
@@ -84,7 +84,7 @@ public class CameraCallbackTests : MonoBehaviour
 			ref CullResults cullResults,
 			ref RenderingData renderingData)
 		{
-			RenderTextureDescriptor opaqueDesc = ScriptableRenderer.CreateRTDesc(ref renderingData.cameraData);
+			RenderTextureDescriptor opaqueDesc = renderer.CreateRTDesc(ref renderingData.cameraData);
 
 			var cmd = CommandBufferPool.Get("Capture Pass");
 			cmd.GetTemporaryRT(m_Target.id, opaqueDesc);

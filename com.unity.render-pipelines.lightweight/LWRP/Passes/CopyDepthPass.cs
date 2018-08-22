@@ -24,7 +24,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             RenderTargetIdentifier copyDepthSurface = destination.Identifier();
             Material depthCopyMaterial = renderer.GetMaterial(MaterialHandles.DepthCopy);
 
-            RenderTextureDescriptor descriptor = ScriptableRenderer.CreateRTDesc(ref renderingData.cameraData);
+            RenderTextureDescriptor descriptor = renderer.CreateRTDesc(ref renderingData.cameraData);
             descriptor.colorFormat = RenderTextureFormat.Depth;
             descriptor.depthBufferBits = 32; //TODO: fix this ;
             descriptor.msaaSamples = 1;
