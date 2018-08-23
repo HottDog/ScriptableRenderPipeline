@@ -7,9 +7,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [3.4.0-preview]
 ### Added
 - When you have enabled Gizmos, they now appear correctly in the Game view.
+- Added requiresDepthPrepass field to RenderingData struct to tell if the runtime platform requires a depth prepass to generate a camera depth texture.
+- RenderingData now holds a reference to CullResults.
+### Changed
+- RenderingData struct is now readonly.
+- ScriptableRenderer always perform a clear before calling IRendererSetup::Setup.
+- Moved rendering utility functions from LightweightPipeline to ScriptableRenderer.
+- ScriptableRenderPass::Execute does not take a CullResults as input anymore. Instead RenderingData has a reference to it.
+- IRendererSetup::Setup does not take ScriptableRenderContext and CullResults as input anymore.
 ### Fixed
 - The Unlit shader now samples Global Illumination correctly.
 - The Inspector window for the Unlit shader now displays correctly.
+- Reduced GC pressure by removing several per-frame memory allocations.
 
 ## [3.3.0-preview]
 ### Added
