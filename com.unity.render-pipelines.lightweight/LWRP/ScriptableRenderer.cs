@@ -229,6 +229,23 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             return configuration;
         }
 
+        public void RenderPostProcess(CommandBuffer cmd, ref CameraData cameraData, RenderTextureFormat colorFormat, RenderTargetIdentifier source, RenderTargetIdentifier dest, bool opaqueOnly)
+        {
+            Camera camera = cameraData.camera;
+            postProcessRenderContext.Reset();
+            postProcessRenderContext.camera = camera;
+            postProcessRenderContext.source = source;
+            postProcessRenderContext.sourceFormat = colorFormat;
+            postProcessRenderContext.destination = dest;
+            postProcessRenderContext.command = cmd;
+            postProcessRenderContext.flip = !cameraData.isStereoEnabled && camera.targetTexture == null;
+
+            if (opaqueOnly)
+                cameraData.postProcessLayer.RenderOpaqueOnly(postProcessRenderContext);
+            else
+                cameraData.postProcessLayer.Render(postProcessRenderContext);
+        }
+
         [Conditional("DEVELOPMENT_BUILD"), Conditional("UNITY_EDITOR")]
         public void RenderObjectsWithError(ref ScriptableRenderContext context, ref CullResults cullResults, Camera camera, FilterRenderersSettings filterSettings, SortFlags sortFlags)
         {

@@ -271,22 +271,5 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             bool isSceneViewCamera = camera.cameraType == CameraType.SceneView;
             return XRGraphicsConfig.enabled && !isSceneViewCamera && (camera.stereoTargetEye == StereoTargetEyeMask.Both);
         }
-
-        public static void RenderPostProcess(CommandBuffer cmd, PostProcessRenderContext context, ref CameraData cameraData, RenderTextureFormat colorFormat, RenderTargetIdentifier source, RenderTargetIdentifier dest, bool opaqueOnly)
-        {
-            Camera camera = cameraData.camera;
-            context.Reset();
-            context.camera = camera;
-            context.source = source;
-            context.sourceFormat = colorFormat;
-            context.destination = dest;
-            context.command = cmd;
-            context.flip = !IsStereoEnabled(camera) && camera.targetTexture == null;
-
-            if (opaqueOnly)
-                cameraData.postProcessLayer.RenderOpaqueOnly(context);
-            else
-                cameraData.postProcessLayer.Render(context);
-        }
     }
 }
