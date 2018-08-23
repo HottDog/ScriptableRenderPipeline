@@ -76,14 +76,6 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         public int bufferBitCount;
     }
 
-    public class CameraComparer : IComparer<Camera>
-    {
-        public int Compare(Camera lhs, Camera rhs)
-        {
-            return (int)(lhs.depth - rhs.depth);
-        }
-    }
-
     public static class LightweightKeywordStrings
     {
         public static readonly string AdditionalLights = "_ADDITIONAL_LIGHTS";
@@ -109,6 +101,11 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         public static PipelineCapabilities GetPipelineCapabilities()
         {
             return s_PipelineCapabilities;
+        }
+
+        public void SortCameras(Camera[] cameras)
+        {
+            Array.Sort(cameras, (lhs, rhs) => (int)(lhs.depth - rhs.depth));
         }
 
         static void SetPipelineCapabilities(LightweightPipelineAsset pipelineAsset)

@@ -40,7 +40,6 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         }
 
         const string k_RenderCameraTag = "Render Camera";
-        CameraComparer m_CameraComparer = new CameraComparer();
         ScriptableRenderer m_Renderer;
         CullResults m_CullResults;
         PipelineSettings m_PipelineSettings;
@@ -147,9 +146,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             GraphicsSettings.lightsUseLinearIntensity = true;
             SetupPerFrameShaderConstants();
 
-            // Sort cameras array by camera depth
-            Array.Sort(cameras, m_CameraComparer);
-
+            SortCameras(cameras);
             foreach (Camera camera in cameras)
             {
                 BeginCameraRendering(camera);
