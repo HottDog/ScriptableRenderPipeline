@@ -37,7 +37,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
                 cmd.SetViewProjectionMatrices(Matrix4x4.identity, Matrix4x4.identity);
                 cmd.SetViewport(renderingData.cameraData.camera.pixelRect);
-                LightweightPipeline.DrawFullScreen(cmd, material);
+                renderer.RenderFullscreenQuad(cmd, material);
             }
             else
             {

@@ -51,7 +51,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 cmd.EnableShaderKeyword(LightweightKeywordStrings.DepthNoMsaa);
                 cmd.DisableShaderKeyword(LightweightKeywordStrings.DepthMsaa2);
                 cmd.DisableShaderKeyword(LightweightKeywordStrings.DepthMsaa4);
-                LightweightPipeline.CopyTexture(cmd, depthSurface, copyDepthSurface, depthCopyMaterial);
+                renderer.CopyTexture(cmd, depthSurface, copyDepthSurface, depthCopyMaterial);
             }
             context.ExecuteCommandBuffer(cmd);
             CommandBufferPool.Release(cmd);

@@ -9,7 +9,7 @@ using UnityEngine.Rendering.PostProcessing;
 
 namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 {
-    public partial class LightweightPipeline : RenderPipeline
+    public sealed partial class LightweightPipeline : RenderPipeline
     {
         static class PerFrameBuffer
         {

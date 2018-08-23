@@ -48,7 +48,41 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         public PostProcessRenderContext postProcessingContext { get; private set; }
 
         public ComputeBuffer perObjectLightIndices { get; private set; }
-        
+
+        static Mesh s_FullscreenMesh = null;
+        static Mesh fullscreenMesh
+        {
+            get
+            {
+                if (s_FullscreenMesh != null)
+                    return s_FullscreenMesh;
+
+                float topV = 1.0f;
+                float bottomV = 0.0f;
+
+                Mesh mesh = new Mesh { name = "Fullscreen Quad" };
+                mesh.SetVertices(new List<Vector3>
+                {
+                    new Vector3(-1.0f, -1.0f, 0.0f),
+                    new Vector3(-1.0f,  1.0f, 0.0f),
+                    new Vector3(1.0f, -1.0f, 0.0f),
+                    new Vector3(1.0f,  1.0f, 0.0f)
+                });
+
+                mesh.SetUVs(0, new List<Vector2>
+                {
+                    new Vector2(0.0f, bottomV),
+                    new Vector2(0.0f, topV),
+                    new Vector2(1.0f, bottomV),
+                    new Vector2(1.0f, topV)
+                });
+
+                mesh.SetIndices(new[] { 0, 1, 2, 2, 1, 3 }, MeshTopology.Triangles, 0, false);
+                mesh.UploadMeshData(true);
+                return mesh;
+            }
+        }
+
         List<ScriptableRenderPass> m_ActiveRenderPassQueue = new List<ScriptableRenderPass>();
 
         List<ShaderPassName> m_LegacyShaderPassNames = new List<ShaderPassName>()
@@ -246,6 +280,11 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 cameraData.postProcessLayer.Render(postProcessingContext);
         }
 
+        public void RenderFullscreenQuad(CommandBuffer cmd, Material material, MaterialPropertyBlock properties = null, int shaderPassId = 0)
+        {
+            cmd.DrawMesh(fullscreenMesh, Matrix4x4.identity, material, 0, shaderPassId, properties);
+        }
+
         [Conditional("DEVELOPMENT_BUILD"), Conditional("UNITY_EDITOR")]
         public void RenderObjectsWithError(ScriptableRenderContext context, ref CullResults cullResults, Camera camera, FilterRenderersSettings filterSettings, SortFlags sortFlags)
         {
@@ -261,6 +300,14 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 errorSettings.SetOverrideMaterial(errorMaterial, 0);
                 context.DrawRenderers(cullResults.visibleRenderers, ref errorSettings, filterSettings);
             }
+        }
+        public void CopyTexture(CommandBuffer cmd, RenderTargetIdentifier source, RenderTargetIdentifier dest, Material material)
+        {
+            // TODO: In order to issue a copyTexture we need to also check if source and dest have same size
+            //if (SystemInfo.copyTextureSupport != CopyTextureSupport.None)
+            //    cmd.CopyTexture(source, dest);
+            //else
+            cmd.Blit(source, dest, material);
         }
 
         void DisposePasses(ref ScriptableRenderContext context)

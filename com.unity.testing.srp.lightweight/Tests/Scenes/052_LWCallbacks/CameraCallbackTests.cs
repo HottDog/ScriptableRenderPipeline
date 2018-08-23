@@ -118,23 +118,23 @@ public class CameraCallbackTests : MonoBehaviour
 			
 			cmd.SetViewport(new Rect(0, renderingData.cameraData.camera.pixelRect.height / 2.0f, renderingData.cameraData.camera.pixelRect.width / 3.0f, renderingData.cameraData.camera.pixelRect.height / 2.0f));
 			cmd.SetGlobalTexture("_BlitTex", afterDepth.Identifier());
-			LightweightPipeline.DrawFullScreen(cmd, material);
+			renderer.RenderFullscreenQuad(cmd, material);
 			
 			cmd.SetViewport(new Rect(renderingData.cameraData.camera.pixelRect.width / 3.0f, renderingData.cameraData.camera.pixelRect.height / 2.0f, renderingData.cameraData.camera.pixelRect.width / 3.0f, renderingData.cameraData.camera.pixelRect.height / 2.0f));
 			cmd.SetGlobalTexture("_BlitTex", afterOpaque.Identifier());
-			LightweightPipeline.DrawFullScreen(cmd, material);
+		    renderer.RenderFullscreenQuad(cmd, material);
 			
 			cmd.SetViewport(new Rect(renderingData.cameraData.camera.pixelRect.width / 3.0f * 2.0f, renderingData.cameraData.camera.pixelRect.height / 2.0f, renderingData.cameraData.camera.pixelRect.width / 3.0f, renderingData.cameraData.camera.pixelRect.height / 2.0f));
 			cmd.SetGlobalTexture("_BlitTex", afterOpaquePost.Identifier());
-			LightweightPipeline.DrawFullScreen(cmd, material);			
+		    renderer.RenderFullscreenQuad(cmd, material);			
 						
 			cmd.SetViewport(new Rect(0f, 0f, renderingData.cameraData.camera.pixelRect.width / 3.0f, renderingData.cameraData.camera.pixelRect.height / 2.0f));
 			cmd.SetGlobalTexture("_BlitTex", afterSkybox.Identifier());
-			LightweightPipeline.DrawFullScreen(cmd, material);
+		    renderer.RenderFullscreenQuad(cmd, material);
 			
 			cmd.SetViewport(new Rect(renderingData.cameraData.camera.pixelRect.width / 3.0f, 0f, renderingData.cameraData.camera.pixelRect.width / 3.0f, renderingData.cameraData.camera.pixelRect.height / 2.0f));
 			cmd.SetGlobalTexture("_BlitTex", afterTransparent.Identifier());
-			LightweightPipeline.DrawFullScreen(cmd, material);
+		    renderer.RenderFullscreenQuad(cmd, material);
 			
 			
 			//TODO: Upsidown UV trash, ignore this for now
