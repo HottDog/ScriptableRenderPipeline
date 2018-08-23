@@ -19,7 +19,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             public static int _ShadowOffset3;
             public static int _ShadowmapSize;
         }
-        
+
         const int k_MaxCascades = 4;
         const int k_ShadowmapBufferBits = 16;
         int m_ShadowCasterCascadesCount;
@@ -32,7 +32,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         Vector4[] m_CascadeSplitDistances;
 
         const string k_RenderDirectionalShadowmapTag = "Render Directional Shadowmap";
-        
+
         private RenderTargetHandle destination { get; set; }
 
         public DirectionalShadowsPass()
@@ -65,7 +65,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         {
             this.destination = destination;
         }
-        
+
         public override void Execute(ScriptableRenderer renderer, ScriptableRenderContext context, ref RenderingData renderingData)
         {
             if (renderingData.shadowData.renderDirectionalShadows)
@@ -127,7 +127,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 var settings = new DrawShadowsSettings(cullResults, shadowLightIndex);
 
                 m_DirectionalShadowmapTexture = RenderTexture.GetTemporary(shadowData.directionalShadowAtlasWidth,
-                        shadowData.directionalShadowAtlasHeight, k_ShadowmapBufferBits, m_ShadowmapFormat);
+                    shadowData.directionalShadowAtlasHeight, k_ShadowmapBufferBits, m_ShadowmapFormat);
                 m_DirectionalShadowmapTexture.filterMode = FilterMode.Bilinear;
                 m_DirectionalShadowmapTexture.wrapMode = TextureWrapMode.Clamp;
                 SetRenderTarget(cmd, m_DirectionalShadowmapTexture, RenderBufferLoadAction.DontCare,
@@ -187,7 +187,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             cmd.SetGlobalVector(DirectionalShadowConstantBuffer._ShadowOffset2, new Vector4(-invHalfShadowAtlasWidth, invHalfShadowAtlasHeight, 0.0f, 0.0f));
             cmd.SetGlobalVector(DirectionalShadowConstantBuffer._ShadowOffset3, new Vector4(invHalfShadowAtlasWidth, invHalfShadowAtlasHeight, 0.0f, 0.0f));
             cmd.SetGlobalVector(DirectionalShadowConstantBuffer._ShadowmapSize, new Vector4(invShadowAtlasWidth, invShadowAtlasHeight,
-                    shadowData.directionalShadowAtlasWidth, shadowData.directionalShadowAtlasHeight));
+                shadowData.directionalShadowAtlasWidth, shadowData.directionalShadowAtlasHeight));
         }
     };
 }

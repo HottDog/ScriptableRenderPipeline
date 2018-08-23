@@ -37,7 +37,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         Vector4[] m_LightDistanceAttenuations;
         Vector4[] m_LightSpotDirections;
         Vector4[] m_LightSpotAttenuations;
-        
+
         private int maxVisibleLocalLights { get; set; }
         private ComputeBuffer perObjectLightIndices { get; set; }
 
@@ -66,7 +66,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         {
             this.maxVisibleLocalLights = maxVisibleLocalLights;
             this.perObjectLightIndices = perObjectLightIndices;
-            
+
             if (m_LightColors.Length != maxVisibleLocalLights)
             {
                 m_LightPositions = new Vector4[maxVisibleLocalLights];
@@ -263,8 +263,8 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
             // If shadows were resolved in screen space we don't sample shadowmap in lit shader. In that case we just set softDirectionalShadows to false.
             bool softDirectionalShadows = shadowData.renderDirectionalShadows && !shadowData.requiresScreenSpaceShadowResolve &&
-                                          shadowData.supportsSoftShadows && lightData.mainLightIndex != -1 &&
-                                          visibleLights[lightData.mainLightIndex].light.shadows == LightShadows.Soft;
+                shadowData.supportsSoftShadows && lightData.mainLightIndex != -1 &&
+                visibleLights[lightData.mainLightIndex].light.shadows == LightShadows.Soft;
 
             bool softLocalShadows = false;
             if (shadowData.renderLocalShadows && shadowData.supportsSoftShadows)

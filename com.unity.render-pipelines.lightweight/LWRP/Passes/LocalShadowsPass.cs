@@ -16,7 +16,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             public static int _LocalShadowOffset3;
             public static int _LocalShadowmapSize;
         }
-        
+
         const int k_ShadowmapBufferBits = 16;
         RenderTexture m_LocalShadowmapTexture;
         RenderTextureFormat m_LocalShadowmapFormat;
@@ -26,8 +26,8 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         float[] m_LocalShadowStrength;
 
         const string k_RenderLocalShadows = "Render Local Shadows";
-        
-        
+
+
         private RenderTargetHandle destination { get; set; }
 
         public LocalShadowsPass()
@@ -50,11 +50,11 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 ? RenderTextureFormat.Shadowmap
                 : RenderTextureFormat.Depth;
         }
-        
+
         public void Setup(RenderTargetHandle destination, int maxVisibleLocalLights)
         {
             this.destination = destination;
-            
+
             if (m_LocalShadowMatrices.Length != maxVisibleLocalLights)
             {
                 m_LocalShadowMatrices = new Matrix4x4[maxVisibleLocalLights];
@@ -126,7 +126,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 int sliceResolution = LightweightShadowUtils.GetMaxTileResolutionInAtlas(atlasWidth, atlasHeight, shadowCastingLightsCount);
 
                 m_LocalShadowmapTexture = RenderTexture.GetTemporary(shadowData.localShadowAtlasWidth,
-                        shadowData.localShadowAtlasHeight, k_ShadowmapBufferBits, m_LocalShadowmapFormat);
+                    shadowData.localShadowAtlasHeight, k_ShadowmapBufferBits, m_LocalShadowmapFormat);
                 m_LocalShadowmapTexture.filterMode = FilterMode.Bilinear;
                 m_LocalShadowmapTexture.wrapMode = TextureWrapMode.Clamp;
 
@@ -148,7 +148,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
                     Matrix4x4 shadowTransform;
                     bool success = LightweightShadowUtils.ExtractSpotLightMatrix(ref cullResults, ref shadowData,
-                            shadowLightIndex, out shadowTransform, out view, out proj);
+                        shadowLightIndex, out shadowTransform, out view, out proj);
 
                     if (success)
                     {
@@ -198,7 +198,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             cmd.SetGlobalVector(LocalShadowConstantBuffer._LocalShadowOffset2, new Vector4(-invHalfShadowAtlasWidth, invHalfShadowAtlasHeight, 0.0f, 0.0f));
             cmd.SetGlobalVector(LocalShadowConstantBuffer._LocalShadowOffset3, new Vector4(invHalfShadowAtlasWidth, invHalfShadowAtlasHeight, 0.0f, 0.0f));
             cmd.SetGlobalVector(LocalShadowConstantBuffer._LocalShadowmapSize, new Vector4(invShadowAtlasWidth, invShadowAtlasHeight,
-                    shadowData.localShadowAtlasWidth, shadowData.localShadowAtlasHeight));
+                shadowData.localShadowAtlasWidth, shadowData.localShadowAtlasHeight));
         }
     }
 }

@@ -28,9 +28,9 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             descriptor.msaaSamples = 1;
             descriptor.bindMS = false;
             cmd.GetTemporaryRT(destination.id, descriptor, FilterMode.Point);
-                       
+
             cmd.SetGlobalTexture("_CameraDepthAttachment", source.Identifier());
-            
+
             if (renderingData.cameraData.msaaSamples > 1)
             {
                 cmd.DisableShaderKeyword(LightweightKeywordStrings.DepthNoMsaa);
@@ -56,7 +56,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             context.ExecuteCommandBuffer(cmd);
             CommandBufferPool.Release(cmd);
         }
-        
+
         public override void FrameCleanup(CommandBuffer cmd)
         {
             if (destination != RenderTargetHandle.CameraTarget)

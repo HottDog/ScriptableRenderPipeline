@@ -26,7 +26,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
         public LightweightPipelineAsset pipelineAsset { get; private set; }
 
-        
+
         private static IRendererSetup m_DefaultRendererSetup;
         private static IRendererSetup defaultRendererSetup
         {
@@ -127,7 +127,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
             m_Renderer.Dispose();
         }
-        
+
         public interface IBeforeCameraRender
         {
             void ExecuteBeforeCameraRender(ScriptableRenderContext context, Camera camera, PipelineSettings pipelineSettings, ScriptableRenderer renderer);
@@ -186,7 +186,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                     ScriptableRenderContext.EmitWorldGeometryForSceneView(camera);
 #endif
                 CullResults.Cull(ref cullingParameters, context, ref cullResults);
-                
+
                 RenderingData renderingData;
                 InitializeRenderingData(settings, ref cameraData, ref cullResults,
                     renderer.maxSupportedLocalLightsPerPass, renderer.maxSupportedVertexLights, out renderingData);
@@ -254,9 +254,9 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
             Rect cameraRect = camera.rect;
             cameraData.isDefaultViewport = (!(Math.Abs(cameraRect.x) > 0.0f || Math.Abs(cameraRect.y) > 0.0f ||
-                                              Math.Abs(cameraRect.width) < 1.0f || Math.Abs(cameraRect.height) < 1.0f));
+                Math.Abs(cameraRect.width) < 1.0f || Math.Abs(cameraRect.height) < 1.0f));
 
-            // If XR is enabled, use XR renderScale. 
+            // If XR is enabled, use XR renderScale.
             // Discard variations lesser than kRenderScaleThreshold.
             // Scale is only enabled for gameview.
             float usedRenderScale = XRGraphicsConfig.enabled ? settings.savedXRGraphicsConfig.renderScale : settings.renderScale;
@@ -287,14 +287,13 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             cameraData.requiresDepthTexture |= cameraData.postProcessEnabled;
         }
 
-        
         void InitializeRenderingData(PipelineSettings settings, ref CameraData cameraData, ref CullResults cullResults,
             int maxSupportedLocalLightsPerPass, int maxSupportedVertexLights,
             out RenderingData renderingData)
         {
             List<VisibleLight> visibleLights = cullResults.visibleLights;
             m_LocalLightIndices.Clear();
-            
+
             bool hasDirectionalShadowCastingLight = false;
             bool hasLocalShadowCastingLight = false;
 
@@ -322,8 +321,8 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             InitializeShadowData(settings, hasDirectionalShadowCastingLight, hasLocalShadowCastingLight, out renderingData.shadowData);
             renderingData.supportsDynamicBatching = settings.supportsDynamicBatching;
             renderingData.requiresDepthPrepass = renderingData.shadowData.requiresScreenSpaceShadowResolve ||
-                                                 renderingData.cameraData.isSceneViewCamera ||
-                                                (cameraData.requiresDepthTexture && !CanCopyDepth(ref cameraData));
+                renderingData.cameraData.isSceneViewCamera ||
+                (cameraData.requiresDepthTexture && !CanCopyDepth(ref cameraData));
         }
 
         void InitializeShadowData(PipelineSettings settings, bool hasDirectionalShadowCastingLight, bool hasLocalShadowCastingLight, out ShadowData shadowData)

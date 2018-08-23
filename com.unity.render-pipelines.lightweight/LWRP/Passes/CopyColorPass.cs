@@ -10,7 +10,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
         private RenderTargetHandle source { get; set; }
         private RenderTargetHandle destination { get; set; }
-        
+
         public CopyColorPass()
         {
             m_SampleOffsetShaderHandle = Shader.PropertyToID("_SampleOffset");
@@ -63,6 +63,5 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 destination = RenderTargetHandle.CameraTarget;
             }
         }
-        
     }
 }

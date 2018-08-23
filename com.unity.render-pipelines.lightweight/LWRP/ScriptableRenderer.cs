@@ -31,7 +31,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         {
             get
             {
-                // TODO: Graphics Emulation are breaking StructuredBuffers disabling it for now until 
+                // TODO: Graphics Emulation are breaking StructuredBuffers disabling it for now until
                 // we have a fix for it
                 return false;
                 // return SystemInfo.supportsComputeShaders &&
@@ -97,7 +97,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
         const string k_ReleaseResourcesTag = "Release Resources";
         readonly Material[] m_Materials;
-        
+
         public ScriptableRenderer(LightweightPipelineAsset pipelineAsset)
         {
             m_Materials = new[]
@@ -137,10 +137,10 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             Camera camera = cameraData.camera;
             RenderTextureDescriptor desc;
             float renderScale = cameraData.renderScale;
-            
+
             if (cameraData.isStereoEnabled)
             {
-                return XRGraphicsConfig.eyeTextureDesc; 
+                return XRGraphicsConfig.eyeTextureDesc;
             }
             else
             {
@@ -161,13 +161,13 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             if (handleID >= m_Materials.Length)
             {
                 Debug.LogError(string.Format("Material {0} is not registered.",
-                        Enum.GetName(typeof(MaterialHandles), handleID)));
+                    Enum.GetName(typeof(MaterialHandles), handleID)));
                 return null;
             }
 
             return m_Materials[handleID];
         }
-        
+
         public void Clear()
         {
             m_ActiveRenderPassQueue.Clear();
@@ -301,6 +301,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 context.DrawRenderers(cullResults.visibleRenderers, ref errorSettings, filterSettings);
             }
         }
+
         public void CopyTexture(CommandBuffer cmd, RenderTargetIdentifier source, RenderTargetIdentifier dest, Material material)
         {
             // TODO: In order to issue a copyTexture we need to also check if source and dest have same size

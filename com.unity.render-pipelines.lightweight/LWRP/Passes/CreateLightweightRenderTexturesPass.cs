@@ -31,7 +31,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 var colorDescriptor = descriptor;
                 colorDescriptor.depthBufferBits = 0;
                 colorDescriptor.sRGB = true;
-                colorDescriptor.msaaSamples = (int) samples;
+                colorDescriptor.msaaSamples = (int)samples;
                 cmd.GetTemporaryRT(colorAttachmentHandle.id, colorDescriptor, FilterMode.Bilinear);
             }
 
@@ -40,8 +40,8 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 var depthDescriptor = descriptor;
                 depthDescriptor.colorFormat = RenderTextureFormat.Depth;
                 depthDescriptor.depthBufferBits = k_DepthStencilBufferBits;
-                depthDescriptor.msaaSamples = (int) samples;
-                depthDescriptor.bindMS = (int) samples > 1;
+                depthDescriptor.msaaSamples = (int)samples;
+                depthDescriptor.bindMS = (int)samples > 1;
                 cmd.GetTemporaryRT(depthAttachmentHandle.id, depthDescriptor, FilterMode.Point);
             }
 

@@ -79,7 +79,6 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             m_Initialized = true;
         }
 
-       
         public void Setup(ScriptableRenderer renderer, ref RenderingData renderingData)
         {
             Init();
@@ -127,7 +126,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             }
 
             bool requiresRenderToTexture = renderer.RequiresIntermediateColorTexture(ref renderingData.cameraData, baseDescriptor);
-            
+
             RenderTargetHandle colorHandle = RenderTargetHandle.CameraTarget;
             RenderTargetHandle depthHandle = RenderTargetHandle.CameraTarget;
 
@@ -135,11 +134,11 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             {
                 colorHandle = ColorAttachment;
                 depthHandle = DepthAttachment;
-                
+
                 var sampleCount = (SampleCount)renderingData.cameraData.msaaSamples;
                 m_CreateLightweightRenderTexturesPass.Setup(baseDescriptor, colorHandle, depthHandle, sampleCount);
                 renderer.EnqueuePass(m_CreateLightweightRenderTexturesPass);
-            }          
+            }
 
             if (renderingData.cameraData.isStereoEnabled)
                 renderer.EnqueuePass(m_BeginXrRenderingPass);

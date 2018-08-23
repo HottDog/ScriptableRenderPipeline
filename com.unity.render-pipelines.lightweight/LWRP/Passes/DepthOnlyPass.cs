@@ -72,7 +72,6 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             CommandBufferPool.Release(cmd);
         }
 
-
         public override void FrameCleanup(CommandBuffer cmd)
         {
             if (depthAttachmentHandle != RenderTargetHandle.CameraTarget)
@@ -81,6 +80,5 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 depthAttachmentHandle = RenderTargetHandle.CameraTarget;
             }
         }
-
     }
 }
