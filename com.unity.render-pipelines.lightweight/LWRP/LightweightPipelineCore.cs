@@ -24,6 +24,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
     public struct RenderingData
     {
+        public CullResults cullResults;
         public CameraData cameraData;
         public LightData lightData;
         public ShadowData shadowData;

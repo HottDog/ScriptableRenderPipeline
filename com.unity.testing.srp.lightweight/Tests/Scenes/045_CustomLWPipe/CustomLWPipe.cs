@@ -28,14 +28,11 @@ public class CustomLWPipe : MonoBehaviour, IRendererSetup
         m_Initialized = true;
     }
 
-    public void Setup(ScriptableRenderer renderer, ref ScriptableRenderContext context,
-        ref CullResults cullResults, ref RenderingData renderingData)
+    public void Setup(ScriptableRenderer renderer, ref RenderingData renderingData)
     {
         Init();
 
-        renderer.Clear();
-
-        renderer.SetupPerObjectLightIndices(ref cullResults, ref renderingData.lightData);
+        renderer.SetupPerObjectLightIndices(ref renderingData.cullResults, ref renderingData.lightData);
         RenderTextureDescriptor baseDescriptor = renderer.CreateRTDesc(ref renderingData.cameraData);
         RenderTextureDescriptor shadowDescriptor = baseDescriptor;
         shadowDescriptor.dimension = TextureDimension.Tex2D;

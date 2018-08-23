@@ -6,7 +6,7 @@ using UnityEngine.Rendering.PostProcessing;
 
 namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 {
-    public class ScriptableRenderer
+    public sealed class ScriptableRenderer
     {
         // Lights are culled per-object. In platforms that don't use StructuredBuffer
         // the engine will set 4 light indices in the following constant unity_4LightIndices0
@@ -45,7 +45,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
         public int maxSupportedVertexLights { get { return k_MaxVertexLights; } }
 
-        public PostProcessRenderContext postProcessRenderContext { get; private set; }
+        public PostProcessRenderContext postProcessingContext { get; private set; }
 
         public ComputeBuffer perObjectLightIndices { get; private set; }
         
@@ -75,7 +75,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 CoreUtils.CreateEngineMaterial(pipelineAsset.screenSpaceShadowShader),
             };
 
-            postProcessRenderContext = new PostProcessRenderContext();
+            postProcessingContext = new PostProcessRenderContext();
         }
 
         public void Dispose()
@@ -90,10 +90,10 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 CoreUtils.Destroy(m_Materials[i]);
         }
 
-        public void Execute(ref ScriptableRenderContext context, ref CullResults cullResults, ref RenderingData renderingData)
+        public void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
         {
             for (int i = 0; i < m_ActiveRenderPassQueue.Count; ++i)
-                m_ActiveRenderPassQueue[i].Execute(this, ref context, ref cullResults, ref renderingData);
+                m_ActiveRenderPassQueue[i].Execute(this, context, ref renderingData);
 
             DisposePasses(ref context);
         }
@@ -232,22 +232,22 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         public void RenderPostProcess(CommandBuffer cmd, ref CameraData cameraData, RenderTextureFormat colorFormat, RenderTargetIdentifier source, RenderTargetIdentifier dest, bool opaqueOnly)
         {
             Camera camera = cameraData.camera;
-            postProcessRenderContext.Reset();
-            postProcessRenderContext.camera = camera;
-            postProcessRenderContext.source = source;
-            postProcessRenderContext.sourceFormat = colorFormat;
-            postProcessRenderContext.destination = dest;
-            postProcessRenderContext.command = cmd;
-            postProcessRenderContext.flip = !cameraData.isStereoEnabled && camera.targetTexture == null;
+            postProcessingContext.Reset();
+            postProcessingContext.camera = camera;
+            postProcessingContext.source = source;
+            postProcessingContext.sourceFormat = colorFormat;
+            postProcessingContext.destination = dest;
+            postProcessingContext.command = cmd;
+            postProcessingContext.flip = !cameraData.isStereoEnabled && camera.targetTexture == null;
 
             if (opaqueOnly)
-                cameraData.postProcessLayer.RenderOpaqueOnly(postProcessRenderContext);
+                cameraData.postProcessLayer.RenderOpaqueOnly(postProcessingContext);
             else
-                cameraData.postProcessLayer.Render(postProcessRenderContext);
+                cameraData.postProcessLayer.Render(postProcessingContext);
         }
 
         [Conditional("DEVELOPMENT_BUILD"), Conditional("UNITY_EDITOR")]
-        public void RenderObjectsWithError(ref ScriptableRenderContext context, ref CullResults cullResults, Camera camera, FilterRenderersSettings filterSettings, SortFlags sortFlags)
+        public void RenderObjectsWithError(ScriptableRenderContext context, ref CullResults cullResults, Camera camera, FilterRenderersSettings filterSettings, SortFlags sortFlags)
         {
             Material errorMaterial = GetMaterial(MaterialHandles.Error);
             if (errorMaterial != null)

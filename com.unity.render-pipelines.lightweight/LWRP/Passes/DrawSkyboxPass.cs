@@ -14,9 +14,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             this.depthAttachmentHandle = depthHandle;
         }
         
-        public override void Execute(ScriptableRenderer renderer, ref ScriptableRenderContext context,
-            ref CullResults cullResults,
-            ref RenderingData renderingData)
+        public override void Execute(ScriptableRenderer renderer, ScriptableRenderContext context, ref RenderingData renderingData)
         {
             
             CommandBuffer cmd = CommandBufferPool.Get("Draw Skybox (Set RT's)");

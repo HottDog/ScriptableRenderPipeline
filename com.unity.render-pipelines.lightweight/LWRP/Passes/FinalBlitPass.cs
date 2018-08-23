@@ -15,9 +15,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             this.descriptor = baseDescriptor;
         }
 
-        public override void Execute(ScriptableRenderer renderer, ref ScriptableRenderContext context,
-            ref CullResults cullResults,
-            ref RenderingData renderingData)
+        public override void Execute(ScriptableRenderer renderer, ScriptableRenderContext context, ref RenderingData renderingData)
         {
             Material material = renderingData.cameraData.isStereoEnabled ? null : renderer.GetMaterial(MaterialHandles.Blit);
             RenderTargetIdentifier sourceRT = colorAttachmentHandle.Identifier();

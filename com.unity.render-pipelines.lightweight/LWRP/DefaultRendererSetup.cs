@@ -80,14 +80,13 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         }
 
        
-        public void Setup(ScriptableRenderer renderer, ref ScriptableRenderContext context,
-            ref CullResults cullResults, ref RenderingData renderingData)
+        public void Setup(ScriptableRenderer renderer, ref RenderingData renderingData)
         {
             Init();
 
             Camera camera = renderingData.cameraData.camera;
 
-            renderer.SetupPerObjectLightIndices(ref cullResults, ref renderingData.lightData);
+            renderer.SetupPerObjectLightIndices(ref renderingData.cullResults, ref renderingData.lightData);
             RenderTextureDescriptor baseDescriptor = renderer.CreateRTDesc(ref renderingData.cameraData);
             RenderTextureDescriptor shadowDescriptor = baseDescriptor;
             shadowDescriptor.dimension = TextureDimension.Tex2D;
@@ -156,9 +155,9 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 renderer.EnqueuePass(pass.GetPassToEnqueue(baseDescriptor, colorHandle, depthHandle));
 
             if (renderingData.cameraData.postProcessEnabled &&
-                renderingData.cameraData.postProcessLayer.HasOpaqueOnlyEffects(renderer.postProcessRenderContext))
+                renderingData.cameraData.postProcessLayer.HasOpaqueOnlyEffects(renderer.postProcessingContext))
             {
-                m_OpaquePostProcessPass.Setup(renderer.postProcessRenderContext, baseDescriptor, colorHandle);
+                m_OpaquePostProcessPass.Setup(renderer.postProcessingContext, baseDescriptor, colorHandle);
                 renderer.EnqueuePass(m_OpaquePostProcessPass);
 
                 foreach (var pass in camera.GetComponents<IAfterOpaquePostProcess>())
@@ -194,7 +193,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
             if (!renderingData.cameraData.isStereoEnabled && renderingData.cameraData.postProcessEnabled)
             {
-                m_TransparentPostProcessPass.Setup(renderer.postProcessRenderContext, baseDescriptor, colorHandle, BuiltinRenderTextureType.CameraTarget);
+                m_TransparentPostProcessPass.Setup(renderer.postProcessingContext, baseDescriptor, colorHandle, BuiltinRenderTextureType.CameraTarget);
                 renderer.EnqueuePass(m_TransparentPostProcessPass);
             }
             else if (!renderingData.cameraData.isOffscreenRender && colorHandle != RenderTargetHandle.CameraTarget)

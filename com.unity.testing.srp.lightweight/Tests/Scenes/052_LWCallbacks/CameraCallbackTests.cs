@@ -80,9 +80,7 @@ public class CameraCallbackTests : MonoBehaviour
 			m_Target = target;
 		}
 
-		public override void Execute(ScriptableRenderer renderer, ref ScriptableRenderContext context,
-			ref CullResults cullResults,
-			ref RenderingData renderingData)
+		public override void Execute(ScriptableRenderer renderer, ScriptableRenderContext context, ref RenderingData renderingData)
 		{
 			RenderTextureDescriptor opaqueDesc = renderer.CreateRTDesc(ref renderingData.cameraData);
 
@@ -107,11 +105,10 @@ public class CameraCallbackTests : MonoBehaviour
 	{
 		CapturePass m_CopyResult = new CapturePass();
 		
-		public override void Execute(ScriptableRenderer renderer, ref ScriptableRenderContext context, ref CullResults cullResults,
-			ref RenderingData renderingData)
+		public override void Execute(ScriptableRenderer renderer, ScriptableRenderContext context, ref RenderingData renderingData)
 		{
 			m_CopyResult.Setup(RenderTargetHandle.CameraTarget, afterAll);
-			m_CopyResult.Execute(renderer, ref context, ref cullResults, ref renderingData);
+			m_CopyResult.Execute(renderer, context, ref renderingData);
 			
 			Material material = renderer.GetMaterial(MaterialHandles.Blit);
 

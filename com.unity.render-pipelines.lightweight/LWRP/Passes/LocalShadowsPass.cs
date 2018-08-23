@@ -63,14 +63,12 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             }
         }
 
-        public override void Execute(ScriptableRenderer renderer, ref ScriptableRenderContext context,
-            ref CullResults cullResults,
-            ref RenderingData renderingData)
+        public override void Execute(ScriptableRenderer renderer, ScriptableRenderContext context, ref RenderingData renderingData)
         {
             if (renderingData.shadowData.renderLocalShadows)
             {
                 Clear();
-                RenderLocalShadowmapAtlas(ref context, ref cullResults, ref renderingData.lightData, ref renderingData.shadowData);
+                RenderLocalShadowmapAtlas(ref context, ref renderingData.cullResults, ref renderingData.lightData, ref renderingData.shadowData);
             }
         }
 

@@ -11,9 +11,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         public virtual void FrameCleanup(CommandBuffer cmd)
         {}
         
-        public abstract void Execute(ScriptableRenderer renderer, ref ScriptableRenderContext context,
-            ref CullResults cullResults,
-            ref RenderingData renderingData);
+        public abstract void Execute(ScriptableRenderer renderer, ScriptableRenderContext context, ref RenderingData renderingData);
 
         protected void RegisterShaderPassName(string passName)
         {

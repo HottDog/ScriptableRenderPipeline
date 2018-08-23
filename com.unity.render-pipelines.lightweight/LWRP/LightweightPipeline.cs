@@ -189,21 +189,18 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                     ScriptableRenderContext.EmitWorldGeometryForSceneView(camera);
 #endif
                 CullResults.Cull(ref cullingParameters, context, ref cullResults);
-                List<VisibleLight> visibleLights = cullResults.visibleLights;
-
+                
                 RenderingData renderingData;
-                InitializeRenderingData(settings, ref cameraData, visibleLights,
-                    renderer.maxSupportedLocalLightsPerPass, renderer.maxSupportedVertexLights,
-                    out renderingData);
+                InitializeRenderingData(settings, ref cameraData, ref cullResults,
+                    renderer.maxSupportedLocalLightsPerPass, renderer.maxSupportedVertexLights, out renderingData);
 
                 var setupToUse = setup;
                 if (setupToUse == null)
                     setupToUse = defaultRendererSetup;
 
                 renderer.Clear();
-                setupToUse.Setup(renderer, ref context, ref cullResults, ref renderingData);
-
-                renderer.Execute(ref context, ref cullResults, ref renderingData);
+                setupToUse.Setup(renderer, ref renderingData);
+                renderer.Execute(context, ref renderingData);
 
                 context.ExecuteCommandBuffer(cmd);
                 CommandBufferPool.Release(cmd);
@@ -294,10 +291,11 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
         }
 
         
-        void InitializeRenderingData(PipelineSettings settings, ref CameraData cameraData,
-            List<VisibleLight> visibleLights, int maxSupportedLocalLightsPerPass, int maxSupportedVertexLights,
+        void InitializeRenderingData(PipelineSettings settings, ref CameraData cameraData, ref CullResults cullResults,
+            int maxSupportedLocalLightsPerPass, int maxSupportedVertexLights,
             out RenderingData renderingData)
         {
+            List<VisibleLight> visibleLights = cullResults.visibleLights;
             m_LocalLightIndices.Clear();
             
             bool hasDirectionalShadowCastingLight = false;
@@ -321,6 +319,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
                 }
             }
 
+            renderingData.cullResults = cullResults;
             renderingData.cameraData = cameraData;
             InitializeLightData(settings, visibleLights, maxSupportedLocalLightsPerPass, maxSupportedVertexLights, m_LocalLightIndices, out renderingData.lightData);
             InitializeShadowData(settings, hasDirectionalShadowCastingLight, hasLocalShadowCastingLight, out renderingData.shadowData);
